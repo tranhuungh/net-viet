@@ -8,24 +8,9 @@ s<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 // GLTFLoader inline (r128 compatible)
-THREE.GLTFLoader = (function(){
-  function GLTFLoader(manager){ this.manager = (manager !== undefined) ? manager : THREE.DefaultLoadingManager; }
-  GLTFLoader.prototype = {
-    constructor: GLTFLoader,
-    load: function(url, onLoad, onProgress, onError){
-      var loader = new THREE.FileLoader(this.manager);
-      loader.setResponseType('arraybuffer');
-      loader.load(url, function(data){ try{ this.parse(data, url, onLoad, onError); } catch(e){ if(onError) onError(e); else throw e; } }.bind(this), onProgress, onError);
-    },
-    parse: function(data, path, onLoad, onError){
-      // Minimal: trigger onError so we gracefully fallback
-      if(onError) onError(new Error('Use full GLTFLoader from three/examples for production'));
-    }
-  };
-  return GLTFLoader;
-})();
 </script>
 <style>
 /* ========== TOÀN BỘ CSS GỐC ========== */
@@ -400,6 +385,33 @@ function toggleLanguage() { const newLang = currentLang === 'vi' ? 'en' : 'vi'; 
 document.querySelectorAll('.lang-switch').forEach(btn => btn.addEventListener('click', toggleLanguage));
 // ======================== REST OF LOGIC (STUDIO, 3D, CART) ========================
 let currentMaterial = 'bamboo';
+const gltfLoader = new THREE.GLTFLoader();
+
+function loadRealModel(path, onLoaded) {
+  gltfLoader.load(
+    path,
+    function(gltf) {
+      const model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 2.5 / maxDim;
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      model.position.sub(center.multiplyScalar(scale));
+      model.scale.setScalar(scale);
+      model.traverse(c => {
+        if (c.isMesh) {
+          c.castShadow = true;
+        }
+      });
+      if (onLoaded) onLoaded(model);
+    },
+    undefined,
+    function(err) { console.error('Lỗi load model:', err); }
+  );
+}
 const productDB = { ceramic: [ { id:'cup',name:'Ly gốm',price:120000,icon:'☕',model:'cup' },{ id:'bowl',name:'Chén gốm',price:90000,icon:'🥣',model:'bowl' },{ id:'plate',name:'Dĩa gốm',price:110000,icon:'🍽️',model:'plate' },{ id:'vase',name:'Bình hoa',price:250000,icon:'🏺',model:'vase' },{ id:'chopstick',name:'Gác đũa',price:80000,icon:'🥢',model:'chopstick' } ], bamboo: [ { id:'nonla_mini',name:'Nón lá mini',price:65000,icon:'🧺',model:'nonla_mini' },{ id:'nonla',name:'Nón lá thường',price:85000,icon:'🧺',model:'nonla' },{ id:'mu_coi',name:'Mũ cói',price:120000,icon:'🧺',model:'mu_coi' },{ id:'pet_house',name:'Nhà thú cưng',price:350000,icon:'🏠',model:'pet_house' },{ id:'pet_toy',name:'Đồ chơi thú cưng',price:95000,icon:'🐾',model:'pet_toy' },{ id:'pet_mat',name:'Đệm thú cưng',price:180000,icon:'🛏️',model:'pet_mat' },{ id:'earring',name:'Khuyên tai tre',price:55000,icon:'💍',model:'earring' },{ id:'pencil_case',name:'Hộp bút tre',price:70000,icon:'✏️',model:'pencil_case' },{ id:'bag',name:'Túi xách tre',price:220000,icon:'👜',model:'bag' } ], brocade: [ { id:'wallet',name:'Ví thổ cẩm',price:150000,icon:'👛',model:'wallet' },{ id:'pencil_brocade',name:'Hộp bút thổ cẩm',price:80000,icon:'✏️',model:'pencil_brocade' },{ id:'rug',name:'Thảm chân',price:280000,icon:'🧶',model:'rug' },{ id:'bag_brocade',name:'Túi xách thổ cẩm',price:320000,icon:'👜',model:'bag_brocade' },{ id:'teddy',name:'Gấu bông thổ cẩm',price:190000,icon:'🧸',model:'teddy' } ], paper: [ { id:'kit',name:'Bộ kit giấy dó',price:99000,icon:'📦',model:'kit' } ] };
 const allPatterns = { ceramic:[{name:'Hoa lam',style:'flower',color1:'#2E5A8A',color2:'#E8E0D0'},{name:'Vân mây',style:'cloud',color1:'#8B6B4A',color2:'#F4EEE6'},{name:'Chấm men rạn',style:'crackle',color1:'#7C5E3A',color2:'#E8DEC8'}], bamboo:[{name:'Đan chéo',style:'weave',color1:'#8B6B4A',color2:'#E8DECE'},{name:'Lá tre',style:'leaf',color1:'#5A7A40',color2:'#F0E8D4'},{name:'Sọc mộc',style:'stripe',color1:'#A88B6A',color2:'#F4EEE0'}], brocade:[{name:'Hoa văn dân tộc',style:'diamond',color1:'#A04E2C',color2:'#E8C87A'},{name:'Sóng nước',style:'wave',color1:'#7B8C6A',color2:'#C8D8C4'},{name:'Chấm tròn',style:'dot',color1:'#C8A878',color2:'#F4EEE0'}], paper:[{name:'Mộc in cá chép',style:'fish',color1:'#B87A38',color2:'#F0E8D4'},{name:'Mộc in hoa sen',style:'lotus',color1:'#A04E2C',color2:'#EAE2D0'},{name:'Mộc in trống đồng',style:'dongson',color1:'#7C4F28',color2:'#EFE8D8'}] };
 function createPatternTexture(style, color1, color2){ const canvas=document.createElement('canvas'); canvas.width=512; canvas.height=512; const ctx=canvas.getContext('2d'); ctx.fillStyle=color2; ctx.fillRect(0,0,512,512); ctx.fillStyle=color1; if(style==='flower') for(let i=0;i<20;i++){ ctx.beginPath(); ctx.arc(Math.random()*512,Math.random()*512,8,0,Math.PI*2); ctx.fill(); } else if(style==='cloud') for(let i=0;i<12;i++){ ctx.beginPath(); ctx.ellipse(Math.random()*512,Math.random()*512,40,20,0,0,Math.PI*2); ctx.fill(); } else if(style==='crackle') for(let i=0;i<300;i++){ ctx.fillRect(Math.random()*512,Math.random()*512,3,1); } else if(style==='weave') for(let i=0;i<30;i++) for(let j=0;j<30;j++){ ctx.fillRect(i*20+((j%2)*10),j*20,8,12); } else if(style==='leaf') for(let i=0;i<40;i++){ ctx.beginPath(); ctx.moveTo(256+Math.sin(i)*100,200+Math.cos(i*2)*50); ctx.lineTo(256+Math.sin(i+0.5)*80,250); ctx.fill(); } else if(style==='stripe') for(let i=0;i<20;i++){ ctx.fillRect(i*30,0,12,512); } else if(style==='diamond') for(let i=0;i<12;i++) for(let j=0;j<12;j++){ ctx.beginPath(); ctx.moveTo(i*50+25,j*50); ctx.lineTo(i*50+50,j*50+25); ctx.lineTo(i*50+25,j*50+50); ctx.lineTo(i*50,j*50+25); ctx.fill(); } else if(style==='wave') for(let y=0;y<512;y+=30){ ctx.beginPath(); for(let x=0;x<512;x+=10){ const wy=y+Math.sin(x*0.03)*15; x===0?ctx.moveTo(x,wy):ctx.lineTo(x,wy); } ctx.strokeStyle=color1; ctx.lineWidth=4; ctx.stroke(); } else if(style==='dot') for(let i=0;i<30;i++) for(let j=0;j<30;j++){ ctx.beginPath(); ctx.arc(i*20+10,j*20+10,4,0,Math.PI*2); ctx.fill(); } else { ctx.font='bold 80px "Cormorant Garamond"'; ctx.fillText(style==='fish'?'🐟':'🌸',200,300); } const tex=new THREE.CanvasTexture(canvas); tex.wrapS=THREE.RepeatWrapping; tex.wrapT=THREE.RepeatWrapping; return tex; }
@@ -457,23 +469,37 @@ function clearRealModel(){
 document.getElementById('realModelInput').addEventListener('change', function(e){
   const file = e.target.files[0];
   if(!file) return;
-  const ext = file.name.split('.').pop().toLowerCase();
   const url = URL.createObjectURL(file);
-  
+  const ext = file.name.split('.').pop().toLowerCase();
+
   if(ext === 'glb' || ext === 'gltf'){
-    // Use THREE.ObjectLoader approach with fetch + parse
-    showToast('Đang tải model 3D…', '⏳');
-    // Load via fetch then use THREE.ObjectLoader for JSON fallback
-    // For GLB/GLTF we need to load the raw binary and create geometry from it
-    // Since we don't have full GLTFLoader, create a placeholder that signals success
-    // but inform user they need the full loader for production
-    loadModelFromURL(url, file.name, ext);
+    showToast('Đang tải model…', '⏳');
+    usingRealModel = true;
+    while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
+    loadRealModel(url, function(model){
+      prodGroup.add(model);
+      document.getElementById('realModelName').textContent = '✓ ' + file.name;
+      document.getElementById('realModelIndicator').classList.add('show');
+      showToast('Đã tải: ' + file.name, '✅');
+    });
   } else if(ext === 'obj'){
-    loadOBJFromFile(file);
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const g = parseOBJGeometry(e.target.result);
+      if(g){
+        usingRealModel = true;
+        while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
+        prodGroup.add(g);
+        document.getElementById('realModelName').textContent = '✓ ' + file.name;
+        document.getElementById('realModelIndicator').classList.add('show');
+        showToast('Đã tải: ' + file.name, '✅');
+      }
+    };
+    reader.readAsText(file);
   } else {
-    showToast('Định dạng không hỗ trợ. Dùng .GLB, .GLTF hoặc .OBJ', '⚠');
+    showToast('Chỉ hỗ trợ .GLB .GLTF .OBJ', '⚠');
   }
-  this.value = ''; // reset input
+  this.value = '';
 });
 
 function loadModelFromURL(url, fileName, ext){
