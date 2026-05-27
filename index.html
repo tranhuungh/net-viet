@@ -102,7 +102,7 @@ body:has(a:hover) .cursor-ring,body:has(button:hover) .cursor-ring{width:52px;he
 .sec-title em{font-style:italic;color:var(--terra)}
 .sec-desc{font-size:14px;color:var(--text2);max-width:540px;line-height:1.75;margin-bottom:52px;font-weight:400}
 .products-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;flex-wrap:wrap;gap:20px}
-.products-header-left{}
+.products-header-left{display:flex;align-items:center}
 
 /* Category Cards — layout ảnh 2 */
 .category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:64px}
@@ -800,7 +800,7 @@ const modelMap={
   vase:()=>{const g=new THREE.Group();const pts=[];for(let i=0;i<=20;i++){let t=i/20;let r=0.6+Math.sin(t*Math.PI)*0.7;pts.push(new THREE.Vector2(r,t*2.2-1.1));}const b=new THREE.Mesh(new THREE.LatheGeometry(pts,48),makeMat());g.add(b);return g;},
   chopstick:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.2,0.6),makeMat());g.add(b);return g;},
   nonla_mini:()=>{const g=new THREE.Group();const c=new THREE.Mesh(new THREE.ConeGeometry(1.2,0.5,32),makeMat());c.position.y=0.2;g.add(c);const b=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.07,16,64),makeMat());b.rotation.x=Math.PI/2;g.add(b);return g;},
-  nonla:()=>{const g=new THREE.Group();const c=new THREE.Mesh(new THREE.ConeGeometry(1.5,0.6,32),makeMat());c.position.y=0.25;g.add(c);const b=new THREE.Mesh(new THREE.TorusGeometry(1.55,0.08,16,64),makeMat());b.rotation.x=Math.PI/2;g.add(b);return g;},
+  nonla: '/models/nonla.glb',
   mu_coi:()=>{const g=new THREE.Group();const c=new THREE.Mesh(new THREE.ConeGeometry(1.3,0.45,32),makeMat());c.position.y=0.15;g.add(c);const b=new THREE.Mesh(new THREE.TorusGeometry(1.35,0.07,16,64),makeMat());b.rotation.x=Math.PI/2;g.add(b);return g;},
   pet_house:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.9,1.4),makeMat());g.add(b);const r=new THREE.Mesh(new THREE.ConeGeometry(1.0,0.7,4),makeMat());r.rotation.y=Math.PI/4;r.position.y=0.5;g.add(r);return g;},
   pet_toy:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(0.5,32,32),makeMat());g.add(b);return g;},
@@ -816,7 +816,15 @@ const modelMap={
   kit:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.6,0.9),makeMat());g.add(b);return g;}
 };
 
-function rebuildModel(typeKey){while(prodGroup.children.length)prodGroup.remove(prodGroup.children[0]);const builder=modelMap[typeKey];if(builder)prodGroup.add(builder());else prodGroup.add(modelMap.bag());if(currentTex)applyTexture(currentTex);else prodGroup.traverse(c=>{if(c.isMesh)c.material.color.set(baseColor)});}
+function rebuildModel(typeKey) {
+  const url = modelMap[typeKey];
+  if(url && typeof url === 'string' && url.startsWith('/')) {
+    loadModelFromUrl(url);
+  } else if(typeof modelMap[typeKey] === 'function') {
+    while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
+    prodGroup.add(modelMap[typeKey]());
+  }
+}
 function applyTexture(tex){currentTex=tex;prodGroup.traverse(c=>{if(!c.isMesh)return;c.material.map=tex;c.material.needsUpdate=true;});}
 function chgColor(hex){baseColor=hex;if(!currentTex)prodGroup.traverse(c=>{if(c.isMesh)c.material.color.set(hex)});else{const tex=currentTex;currentTex=null;applyTexture(tex);prodGroup.traverse(c=>{if(c.isMesh)c.material.color.set(hex)});}}
 
@@ -1004,6 +1012,25 @@ document.getElementById('fileIn').addEventListener('change',e=>{if(e.target.file
 // ===== REAL MODEL IMPORT =====
 let usingRealModel=false;
 const gltfLoader=new THREE.GLTFLoader();
+function loadModelFromUrl(url, onSuccess) {
+  gltfLoader.load(url, function(gltf) {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 2.5 / maxDim;
+    const center = new THREE.Vector3(); box.getCenter(center);
+    model.position.sub(center.multiplyScalar(scale));
+    model.scale.setScalar(scale);
+    model.traverse(c => { if(c.isMesh) c.castShadow = true; });
+    while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
+    prodGroup.add(model);
+    // Giữ lại màu/texture nếu có
+    if(currentTex) applyTexture(currentTex);
+    else prodGroup.traverse(c => { if(c.isMesh) c.material.color.set(baseColor); });
+    if(onSuccess) onSuccess();
+  }, undefined, err => { console.error(err); showToast('Lỗi tải model', '⚠️'); });
+}
 function clearRealModel(){usingRealModel=false;document.getElementById('realModelIndicator').classList.remove('show');const activeBtn=document.querySelector('#dynamicProductGrid .prod-btn.on');if(activeBtn)rebuildModel(activeBtn.dataset.model);}
 
 document.getElementById('realModelInput').addEventListener('change',function(e){
