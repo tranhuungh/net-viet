@@ -926,12 +926,12 @@ const productDB={
     {id:'chopstick',name:'Gác đũa',price:80000,icon:'🥢',model:'chopstick'}
   ],
   bamboo:[
-    {id:'nonla_mini',name:'Móc khóa nón lá mini',price:45000,icon:'🪄',model:'nonla_mini'},
-    {id:'nonla',name:'Nón lá thường',price:85000,icon:'🧺',model:'nonla'},
-    {id:'pet_house',name:'Nhà thú cưng',price:350000,icon:'🏠',model:'pet_house'},
-    {id:'pet_toy',name:'Đồ chơi thú cưng',price:95000,icon:'🐾',model:'pet_toy'},
-    {id:'pencil_case',name:'Hộp bút tre',price:70000,icon:'✏️',model:'pencil_case'},
-    {id:'bag',name:'Túi xách tre',price:220000,icon:'👜',model:'bag'}
+    {id:'nonla_mini',name:'Móc khóa nón lá mini',price:45000,icon:'🪄',img:'images/mockhoa.png', model:'nonla_mini'},
+    {id:'nonla',name:'Nón lá thường',price:85000,icon:'🧺',img:'images/non-la.png', model:'nonla_mini', model:'nonla'},
+    {id:'pet_house',name:'Nhà thú cưng',price:350000,icon:'🏠', img:'images/pethouse.png',model:'pet_house'},
+    {id:'pet_toy',name:'Đồ chơi thú cưng',price:95000,icon:'🐾', img:'images/pethouse.png', model:'pet_toy'},
+    {id:'pencil_case',name:'Hộp bút tre',price:70000,icon:'✏️', img:'images/pencilcase.png',model:'pencil_case'},
+    {id:'bag',name:'Túi xách tre',price:220000,icon:'👜',img:'images/bag.png',model:'bag'}
   ],
   brocade:[
     {id:'wallet',name:'Ví',price:150000,icon:'👛',model:'wallet'},
@@ -1332,10 +1332,10 @@ function openCategoryPage(material){
   const grid=document.getElementById('catProductGrid');
   grid.innerHTML=products.map(p=>`
     <div class="cat-prod-card" onclick="openStudioFromCatPage('${material}','${p.model}')">
-      <div class="cat-prod-thumb">
-        <div class="cat-prod-tag">${lang==='en'?'Handcraft':'Tinh hoa'}</div>
-        <span style="font-size:80px">${p.icon}</span>
-      </div>
+      <div class="cat-prod-thumb" style="${p.img ? `background-image:url('${p.img}');background-size:cover;background-position:center;` : ''}">
+  <div class="cat-prod-tag">${lang==='en'?'Handcraft':'Tinh hoa'}</div>
+  ${p.img ? '' : `<span style="font-size:80px">${p.icon}</span>`}
+</div>
       <div class="cat-prod-info">
         <div class="cat-prod-name">${p.name}</div>
         <div class="cat-prod-sub">${lang==='en'?'Handcrafted · 5–10 days':'Thủ công · 5–10 ngày'}</div>
