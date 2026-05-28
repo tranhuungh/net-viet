@@ -840,20 +840,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div style="width:1px;height:24px;background:var(--border);margin:0 2px"></div>
             <div class="draw-size-row" style="width:auto;flex:1">
               <label>Nét</label>
-              <input type="range" id="drawSizeRange" min="2" max="32" value="6">
-              <span style="font-size:11px;color:var(--brown);width:20px;text-align:right;font-weight:600" id="drawSizeVal">6</span>
+              <input type="range" id="drawSizeRange" min="2" max="48" value="16">
+              <span style="font-size:11px;color:var(--brown);width:20px;text-align:right;font-weight:600" id="drawSizeVal">16</span>
             </div>
           </div>
-          <!-- Canvas -->
-          <div class="draw-canvas-wrap">
-            <canvas id="drawCanvas" width="480" height="220"></canvas>
+          <!-- Paint-on-3D instruction -->
+          <div id="drawOnModelHint" style="background:linear-gradient(135deg,rgba(124,79,40,.08),rgba(184,122,56,.12));border:1.5px dashed rgba(124,79,40,.35);border-radius:10px;padding:14px 16px;text-align:center;margin-bottom:8px">
+            <div style="font-size:22px;margin-bottom:6px">🖌️</div>
+            <div style="font-size:12px;font-weight:600;color:var(--brown);margin-bottom:4px">Vẽ trực tiếp lên model 3D</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">Click và kéo trên model phía trên để vẽ<br>Model sẽ dừng xoay khi bạn đang vẽ</div>
           </div>
           <!-- Actions -->
           <div class="draw-actions">
-            <button class="draw-action-btn draw-apply-btn" id="drawApplyBtn">Áp lên model 3D →</button>
-            <button class="draw-action-btn draw-clear-btn" id="drawClearBtn">Xóa hết</button>
+            <button class="draw-action-btn draw-clear-btn" id="drawClearBtn">🗑 Xóa hết</button>
           </div>
-          <div class="draw-applied-badge" id="drawAppliedBadge">✓ Đã áp họa tiết vẽ tay lên model</div>
+          <div class="draw-applied-badge" id="drawAppliedBadge">✓ Đã vẽ lên model 3D</div>
         </div>
       </div>
       <div class="studio-cta">
@@ -929,7 +930,7 @@ const productDB={
     {id:'nonla_mini',name:'Móc khóa nón lá mini',price:45000,icon:'🪄',img:'images/mockhoa.png', model:'nonla_mini'},
     {id:'nonla',name:'Nón lá thường',price:85000,icon:'🧺',img:'images/non-la.png', model:'nonla_mini', model:'nonla'},
     {id:'pet_house',name:'Nhà thú cưng',price:350000,icon:'🏠', img:'images/pethouse.png',model:'pet_house'},
-    {id:'pet_toy',name:'Đồ chơi thú cưng',price:95000,icon:'🐾', img:'images/pethouse.png', model:'pet_toy'},
+    {id:'pet_toy',name:'Đồ chơi thú cưng',price:95000,icon:'🐾', img:'images/pettoy.png', model:'pet_toy'},
     {id:'pencil_case',name:'Hộp bút tre',price:70000,icon:'✏️', img:'images/pencilcase.png',model:'pencil_case'},
     {id:'bag',name:'Túi xách tre',price:220000,icon:'👜',img:'images/bag.png',model:'bag'}
   ],
@@ -982,7 +983,7 @@ const modelMap={
   nonla: '/models/nonla.glb',
   mu_coi:()=>{const g=new THREE.Group();const c=new THREE.Mesh(new THREE.ConeGeometry(1.3,0.45,32),makeMat());c.position.y=0.15;g.add(c);const b=new THREE.Mesh(new THREE.TorusGeometry(1.35,0.07,16,64),makeMat());b.rotation.x=Math.PI/2;g.add(b);return g;},
   pet_house: '/models/pethouse.glb',
-  pet_toy:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(0.5,32,32),makeMat());g.add(b);return g;},
+  pet_toy:'/models/pettoy.glb',
   pet_mat:()=>{const g=new THREE.Group();const m=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.1,1.0),makeMat());g.add(m);return g;},
   earring:()=>{const g=new THREE.Group();const r=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.05,16,48),makeMat());r.rotation.x=Math.PI/2;g.add(r);return g;},
   pencil_case: '/models/duplex.glb',
@@ -1054,68 +1055,175 @@ function updateStudioForMaterial(material){
 let currentPrice=220000,currentName='Túi xách tre',currentIcon='👜';
 function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart();}
 
-// ===== DRAWING CANVAS INIT =====
+// ===== PAINT-ON-3D INIT =====
 (function(){
-  const drawCanvas=document.getElementById('drawCanvas');
-  const drawCtx=drawCanvas.getContext('2d');
-  let drawIsDrawing=false,drawMode='pen',drawColor='#7C4F28',drawSize=6;
-  drawCtx.fillStyle='#FFFFFF';drawCtx.fillRect(0,0,drawCanvas.width,drawCanvas.height);
+  // Shared paint texture canvas (1024x1024 offscreen)
+  const PAINT_SIZE = 1024;
+  const paintCanvas = document.createElement('canvas');
+  paintCanvas.width = paintCanvas.height = PAINT_SIZE;
+  const paintCtx = paintCanvas.getContext('2d');
+  // Start with neutral light base so model colours show through
+  paintCtx.fillStyle = '#F5EFE6';
+  paintCtx.fillRect(0, 0, PAINT_SIZE, PAINT_SIZE);
 
-  const drawPalette=['#7C4F28','#A04E2C','#B87A38','#1E1610','#7B8C6A','#607080','#C8A878','#E8C87A','#ffffff','#2E5A8A','#5A3A6A','#3A6A3A'];
-  const drawColorsEl=document.getElementById('drawColors');
-  drawColorsEl.innerHTML=drawPalette.map((c,i)=>`<div class="draw-color-dot${i===0?' on':''}" style="background:${c}" data-color="${c}"></div>`).join('');
-  // mark first selected
-  drawColorsEl.querySelector('.draw-color-dot').style.border='2px solid var(--dark)';
+  // Shared Three.js CanvasTexture driven by paintCanvas
+  let paintTex = null;
+
+  function ensurePaintTex(){
+    if(!paintTex){
+      paintTex = new THREE.CanvasTexture(paintCanvas);
+      paintTex.wrapS = THREE.RepeatWrapping;
+      paintTex.wrapT = THREE.RepeatWrapping;
+    }
+    return paintTex;
+  }
+
+  // Apply paint texture to all meshes and mark needsUpdate each stroke
+  function flushPaint(){
+    const tex = ensurePaintTex();
+    tex.needsUpdate = true;
+    prodGroup.traverse(c=>{
+      if(!c.isMesh) return;
+      if(c.material.map !== tex){
+        c.material.map = tex;
+        c.material.needsUpdate = true;
+      }
+    });
+    currentTex = tex;
+    document.getElementById('drawAppliedBadge').classList.add('show');
+  }
+
+  // Expose so rebuildModel can re-apply when switching products
+  window._paintTex = null;
+  window._reapplyPaint = function(){
+    if(paintTex){
+      prodGroup.traverse(c=>{
+        if(!c.isMesh) return;
+        c.material.map = paintTex;
+        c.material.needsUpdate = true;
+      });
+      currentTex = paintTex;
+    }
+  };
+
+  // ---- Palette & tools ----
+  let drawMode = 'pen', drawColor = '#7C4F28', drawSize = 16;
+
+  const drawPalette = ['#7C4F28','#A04E2C','#B87A38','#1E1610','#7B8C6A','#607080','#C8A878','#E8C87A','#ffffff','#2E5A8A','#5A3A6A','#3A6A3A'];
+  const drawColorsEl = document.getElementById('drawColors');
+  drawColorsEl.innerHTML = drawPalette.map((c,i)=>`<div class="draw-color-dot${i===0?' on':''}" style="background:${c}" data-color="${c}"></div>`).join('');
   drawColorsEl.querySelectorAll('.draw-color-dot').forEach(dot=>{
     dot.addEventListener('click',()=>{
       drawColorsEl.querySelectorAll('.draw-color-dot').forEach(d=>{d.classList.remove('on');d.style.border='2px solid transparent';});
-      dot.classList.add('on');dot.style.border='2px solid var(--dark)';
-      drawColor=dot.dataset.color;
-      drawMode='pen';
+      dot.classList.add('on'); dot.style.border='2px solid var(--dark)';
+      drawColor = dot.dataset.color;
+      drawMode = 'pen';
       document.getElementById('drawPenBtn').classList.add('on');
       document.getElementById('drawEraserBtn').classList.remove('on');
     });
   });
+  // mark first dot
+  drawColorsEl.querySelector('.draw-color-dot').style.border='2px solid var(--dark)';
 
   document.getElementById('drawPenBtn').addEventListener('click',()=>{drawMode='pen';document.getElementById('drawPenBtn').classList.add('on');document.getElementById('drawEraserBtn').classList.remove('on');});
   document.getElementById('drawEraserBtn').addEventListener('click',()=>{drawMode='eraser';document.getElementById('drawEraserBtn').classList.add('on');document.getElementById('drawPenBtn').classList.remove('on');});
   document.getElementById('drawSizeRange').addEventListener('input',function(){drawSize=parseInt(this.value);document.getElementById('drawSizeVal').textContent=drawSize;});
 
-  function getDrawPos(e){
-    const rect=drawCanvas.getBoundingClientRect();
-    const scaleX=drawCanvas.width/rect.width,scaleY=drawCanvas.height/rect.height;
-    if(e.touches){return{x:(e.touches[0].clientX-rect.left)*scaleX,y:(e.touches[0].clientY-rect.top)*scaleY};}
-    return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
-  }
-  function startDraw(e){e.preventDefault();drawIsDrawing=true;const p=getDrawPos(e);drawCtx.beginPath();drawCtx.moveTo(p.x,p.y);}
-  function doDraw(e){
-    if(!drawIsDrawing)return;e.preventDefault();
-    const p=getDrawPos(e);
-    drawCtx.lineWidth=drawMode==='eraser'?drawSize*2.5:drawSize;
-    drawCtx.lineCap='round';drawCtx.lineJoin='round';
-    drawCtx.strokeStyle=drawMode==='eraser'?'#FFFFFF':drawColor;
-    drawCtx.lineTo(p.x,p.y);drawCtx.stroke();drawCtx.beginPath();drawCtx.moveTo(p.x,p.y);
-  }
-  function stopDraw(){if(drawIsDrawing){drawIsDrawing=false;drawCtx.beginPath();}}
+  // ---- Raycasting paint on 3D ----
+  const raycaster = new THREE.Raycaster();
+  const paintMouse = new THREE.Vector2();
+  let isPainting = false;
+  window.isDrawTabActive = false;
 
-  drawCanvas.addEventListener('mousedown',startDraw);
-  drawCanvas.addEventListener('mousemove',doDraw);
-  drawCanvas.addEventListener('mouseup',stopDraw);
-  drawCanvas.addEventListener('mouseleave',stopDraw);
-  drawCanvas.addEventListener('touchstart',startDraw,{passive:false});
-  drawCanvas.addEventListener('touchmove',doDraw,{passive:false});
-  drawCanvas.addEventListener('touchend',stopDraw);
+  // Track which tab is active
+  document.getElementById('tabPatternBtn').addEventListener('click',()=>{ window.isDrawTabActive=true; updateCanvasCursor(); });
+  document.getElementById('tabProductBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; updateCanvasCursor(); });
+  document.getElementById('tabDecoBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; updateCanvasCursor(); });
 
-  document.getElementById('drawApplyBtn').addEventListener('click',()=>{
-    const tex=new THREE.CanvasTexture(drawCanvas);
-    tex.wrapS=THREE.RepeatWrapping;tex.wrapT=THREE.RepeatWrapping;
-    applyTexture(tex);
-    document.getElementById('drawAppliedBadge').classList.add('show');
-    showToast('Đã áp họa tiết vẽ tay lên model 3D','🎨');
-  });
+  function updateCanvasCursor(){
+    const cc = document.getElementById('canvas-container');
+    if(window.isDrawTabActive){ cc.style.cursor='crosshair'; }
+    else { cc.style.cursor='grab'; }
+  }
+
+  function getUVAtPoint(event){
+    const cc = document.getElementById('canvas-container');
+    const rect = cc.getBoundingClientRect();
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    paintMouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    paintMouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(paintMouse, cam);
+    // collect all mesh descendants
+    const meshes = [];
+    prodGroup.traverse(c=>{ if(c.isMesh) meshes.push(c); });
+    const hits = raycaster.intersectObjects(meshes, false);
+    if(hits.length > 0 && hits[0].uv){
+      return hits[0].uv;
+    }
+    return null;
+  }
+
+  function paintAtUV(uv){
+    if(!uv) return;
+    const x = uv.x * PAINT_SIZE;
+    const y = (1 - uv.y) * PAINT_SIZE; // flip Y
+    const r = drawMode === 'eraser' ? drawSize * 2 : drawSize;
+    paintCtx.beginPath();
+    paintCtx.arc(x, y, r, 0, Math.PI * 2);
+    paintCtx.fillStyle = drawMode === 'eraser' ? '#F5EFE6' : drawColor;
+    paintCtx.fill();
+    flushPaint();
+  }
+
+  // Intercept 3D canvas events when draw tab is active
+  const cc3d = document.getElementById('canvas-container');
+
+  function onPaintStart(e){
+    if(!window.isDrawTabActive) return;
+    isPainting = true;
+    autoRot = false; // stop auto-rotation while painting
+    e.preventDefault();
+    e.stopPropagation();
+    paintAtUV(getUVAtPoint(e));
+  }
+  function onPaintMove(e){
+    if(!window.isDrawTabActive || !isPainting) return;
+    e.preventDefault();
+    e.stopPropagation();
+    paintAtUV(getUVAtPoint(e));
+  }
+  function onPaintEnd(e){
+    if(!window.isDrawTabActive) return;
+    isPainting = false;
+    // restart auto-rotate after 2.5s pause
+    setTimeout(()=>{ if(!isPainting) autoRot=true; }, 2500);
+  }
+
+  cc3d.addEventListener('mousedown', onPaintStart, true);
+  cc3d.addEventListener('mousemove', onPaintMove, true);
+  cc3d.addEventListener('mouseup',   onPaintEnd,   true);
+  cc3d.addEventListener('touchstart', onPaintStart, {capture:true, passive:false});
+  cc3d.addEventListener('touchmove',  onPaintMove,  {capture:true, passive:false});
+  cc3d.addEventListener('touchend',   onPaintEnd,   {capture:true, passive:false});
+
+  // Clear button resets paint canvas and removes texture
   document.getElementById('drawClearBtn').addEventListener('click',()=>{
-    drawCtx.fillStyle='#FFFFFF';drawCtx.fillRect(0,0,drawCanvas.width,drawCanvas.height);
+    paintCtx.fillStyle = '#F5EFE6';
+    paintCtx.fillRect(0, 0, PAINT_SIZE, PAINT_SIZE);
+    if(paintTex){ paintTex.needsUpdate = true; }
+    // revert to plain base colour
+    currentTex = null;
+    prodGroup.traverse(c=>{
+      if(!c.isMesh) return;
+      c.material.map = null;
+      c.material.color.set(baseColor);
+      c.material.needsUpdate = true;
+    });
+    paintTex = null;
     document.getElementById('drawAppliedBadge').classList.remove('show');
+    showToast('Đã xóa hết họa tiết','🗑');
   });
 })();
 
@@ -1178,9 +1286,11 @@ document.querySelectorAll('.fbtn').forEach(btn=>{btn.addEventListener('click',()
 
 // ===== 3D CONTROLS =====
 let drag=false,pX=0,pY=0,rotY=0,rotX=0,autoRot=true,lastDragTime=0;
-rend.domElement.addEventListener('mousedown',e=>{drag=true;pX=e.clientX;pY=e.clientY;autoRot=false;e.preventDefault()});
+// isDrawTabActive is defined in the paint IIFE below; default false here
+if(typeof isDrawTabActive==='undefined') window.isDrawTabActive=false;
+rend.domElement.addEventListener('mousedown',e=>{if(window.isDrawTabActive)return;drag=true;pX=e.clientX;pY=e.clientY;autoRot=false;e.preventDefault()});
 window.addEventListener('mouseup',()=>{if(drag){drag=false;lastDragTime=Date.now();setTimeout(()=>{if(Date.now()-lastDragTime>2000)autoRot=true;},2500);}});
-window.addEventListener('mousemove',e=>{if(!drag)return;const dx=e.clientX-pX,dy=e.clientY-pY;rotY+=dx*.009;rotX=Math.max(-Math.PI*.48,Math.min(Math.PI*.48,rotX+dy*.007));pX=e.clientX;pY=e.clientY;});
+window.addEventListener('mousemove',e=>{if(!drag||window.isDrawTabActive)return;const dx=e.clientX-pX,dy=e.clientY-pY;rotY+=dx*.009;rotX=Math.max(-Math.PI*.48,Math.min(Math.PI*.48,rotX+dy*.007));pX=e.clientX;pY=e.clientY;});
 rend.domElement.addEventListener('wheel',e=>{cam.position.z=Math.max(4,Math.min(10,cam.position.z+e.deltaY*.015));},{passive:true});
 function loop(){requestAnimationFrame(loop);if(autoRot)rotY+=.005;prodGroup.rotation.y=rotY;prodGroup.rotation.x=rotX;rend.render(scene,cam);}loop();
 new ResizeObserver(()=>{const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;cam.aspect=w/h;cam.updateProjectionMatrix();rend.setSize(w,h);}).observe(container);
