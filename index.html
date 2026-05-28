@@ -794,7 +794,7 @@ const prodGroup=new THREE.Group(); scene.add(prodGroup);
 
 // ===== MODEL MAP =====
 const modelMap={
-  cup:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.6,1.6,48,8),makeMat());b.castShadow=true;g.add(b);const r=new THREE.Mesh(new THREE.TorusGeometry(0.92,0.05,8,48),makeMat());r.position.y=0.82;g.add(r);return g;},
+  cup:'/models/cofee_mug.glb',
   bowl:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(1.1,48,32,0,Math.PI*2,0,0.85),makeMat());b.scale.set(1,0.6,1);b.position.y=-0.2;g.add(b);return g;},
   plate:()=>{const g=new THREE.Group();const p=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.2,0.12,48),makeMat());p.castShadow=true;g.add(p);const i=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.1,0.08,48),makeMat());i.position.y=0.04;g.add(i);return g;},
   vase:()=>{const g=new THREE.Group();const pts=[];for(let i=0;i<=20;i++){let t=i/20;let r=0.6+Math.sin(t*Math.PI)*0.7;pts.push(new THREE.Vector2(r,t*2.2-1.1));}const b=new THREE.Mesh(new THREE.LatheGeometry(pts,48),makeMat());g.add(b);return g;},
@@ -806,14 +806,14 @@ const modelMap={
   pet_toy:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(0.5,32,32),makeMat());g.add(b);return g;},
   pet_mat:()=>{const g=new THREE.Group();const m=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.1,1.0),makeMat());g.add(m);return g;},
   earring:()=>{const g=new THREE.Group();const r=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.05,16,48),makeMat());r.rotation.x=Math.PI/2;g.add(r);return g;},
-  pencil_case:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.5,0.8),makeMat());g.add(b);return g;},
+  pencil_case: '/models/duplex.glb',
   bag: '/models/wovenbasket.glb',
   wallet:()=>{const g=new THREE.Group();const r=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.15,0.6),makeMat());g.add(r);return g;},
   pencil_brocade:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.4,0.7),makeMat());g.add(b);return g;},
   rug:()=>{const g=new THREE.Group();const r=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.08,1.0),makeMat());g.add(r);return g;},
   bag_brocade:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.8,0.5),makeMat());g.add(b);const s=new THREE.Mesh(new THREE.TorusGeometry(0.5,0.07,8,32),makeMat());s.position.y=0.5;g.add(s);return g;},
   teddy:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(0.55,32,32),makeMat());g.add(b);const h=new THREE.Mesh(new THREE.SphereGeometry(0.4,32,32),makeMat());h.position.y=0.65;g.add(h);const eL=new THREE.Mesh(new THREE.SphereGeometry(0.2,24,24),makeMat());eL.position.set(-0.3,0.85,0);g.add(eL);const eR=new THREE.Mesh(new THREE.SphereGeometry(0.2,24,24),makeMat());eR.position.set(0.3,0.85,0);g.add(eR);return g;},
-  kit:()=>{const g=new THREE.Group();const b=new THREE.Mesh(new THREE.BoxGeometry(1.2,0.6,0.9),makeMat());g.add(b);return g;}
+  kit: '/models/kit.glb'
 };
 
 function rebuildModel(typeKey) {
