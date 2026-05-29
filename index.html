@@ -1829,11 +1829,21 @@ let toastTimer;
 function showToast(msg,icon='✓'){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;document.getElementById('toastIcon').textContent=icon;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3200);}
 
 // ===== ARTISANS =====
-const artisansData=[{name:"Nguyễn Văn Thành",craft:"Đan tre Phú Vinh",exp:"32 năm",quote:"Mỗi sợi tre là một nét vẽ.",villageHistory:"Làng Phú Vinh (Chương Mỹ, Hà Nội) có nghề đan tre hơn 400 năm.",share:"Tôi mong muốn truyền dạy cho thế hệ trẻ."},{name:"Trần Thị Hoa",craft:"Gốm Bát Tràng",exp:"18 năm",quote:"Đất sét dạy tôi sự kiên nhẫn.",villageHistory:"Làng Bát Tràng (Gia Lâm, Hà Nội) hơn 700 năm tuổi.",share:"Mỗi chiếc bát đều chứa đựng tâm huyết."},{name:"Mùa Thị Xoa",craft:"Thổ cẩm H'Mông",exp:"40 năm",quote:"Từng hoa văn là tiếng núi rừng.",villageHistory:"Bản Cát Cát, Sa Pa.",share:"Tôi mong muốn giữ gìn bản sắc dân tộc."},{name:"Phạm Văn Khải",craft:"Đèn lồng Hội An",exp:"28 năm",quote:"Ánh sáng từ tre, giấy và tình yêu phố cổ.",villageHistory:"Lồng đèn Hội An gắn liền với Tết Trung thu.",share:"Tôi tự hào khi sản phẩm được du khách yêu thích."}];
+const artisansData=[
+  {name:"Nguyễn Văn Trung",img:"images/bactrung.png",craft:"Đan tre Phú Vinh",exp:"60 năm",loc:"📍 Làng Phú Vinh, Hà Nội",quote:"Nghề đã níu giữ tôi, cho tôi nghị lực để đứng lên vượt qua số phận.",villageHistory:"Làng Phú Vinh (Chương Mỹ, Hà Nội) có nghề đan tre hơn 400 năm.",share:"Trận ốm năm 9 tuổi cướp đi của tôi đôi chân lành lặn. Lúc tuyệt vọng nhất, tôi tìm đến từng nan tre, sợi mây của làng để làm bầu bạn. Nghề đan lát không chỉ nuôi sống tôi, mà còn dạy tôi kiên nhẫn. Tôi mày mò đan tranh chân dung bằng mây tre chỉ để chứng minh một điều: người khuyết tật vẫn có thể làm nên những tác phẩm vươn tầm thế giới."},
+  {name:"Trần Độ",img:"images/bacdo.png",craft:"Gốm Bát Tràng",exp:"50 năm",loc:"📍 Làng Bát Tràng, Hà Nội",quote:"Người thợ gốm phải biết gửi gắm tâm tư vào đất, dùng ngọn lửa để thổi hồn, thì cái bình cái lọ mới biết nói chuyện.",villageHistory:"Làng Bát Tràng (Gia Lâm, Hà Nội) hơn 700 năm tuổi.",share:"Tôi đã dành hàng chục năm ròng rã lặn lội tìm kiếm và phục dựng thành công hơn 70 bài men gốm cổ quý hiếm của các triều đại Lý, Trần, Lê. Tác phẩm không chỉ là đồ vật, mà là những di sản văn hóa mang đậm hồn phách dân tộc, được chọn làm quà tặng quốc gia cho các nguyên thủ thế giới."},
+  {name:"Nguyễn Đăng Chế",img:"images/bacche.png",craft:"Tranh Đông Hồ",exp:"80 năm thăng trầm cùng giấy dó và màu điệp",loc:"📍 Làng Đông Hồ, Bắc Ninh",quote:"Sợ nhất là mai này không ai còn nhớ đến, nên tôi phải giữ lại nghề này bằng mọi giá.",villageHistory:"Làng tranh Đông Hồ, phường Thuận Thành, tỉnh Bắc Ninh.",share:"Cái thời người ta đua nhau bỏ nghề đi làm hàng mã, xót ruột quá, tôi đạp xe đi khắp nơi gom mua lại từng bản khắc gỗ cổ mốc meo. Nhiều người bảo tôi gàn dở, mua củi về làm gì. Nhưng với tôi, mất đi những nếp khắc, màu điệp ấy là mất đi cả hồn cốt cha ông. Cả đời tôi chỉ mong giữ lại chút màu dân tộc sáng bừng trên giấy điệp."},
+  {name:"Vàng Thị Mai",img:"images/bacmai.png",craft:"Thổ cẩm H'Mông",exp:"40 năm",loc:"📍 Bản Cát Cát, Sa Pa",quote:"Từng hoa văn là tiếng núi rừng.",villageHistory:"Bản Cát Cát, Sa Pa.",share:"Người Mông mình quan niệm sợi lanh là thứ dẫn đường cho người khuất núi tìm về với tổ tiên. Nhìn con gái trong bản dần bỏ khung cửi, tôi xót ruột lắm. Những ngày đầu lập hợp tác xã, tôi lặn lội mang từng xấp vải lanh đi gõ cửa các cửa hàng lưu niệm dưới xuôi, có người nhìn bộ dạng mình còn xua đuổi. Nhưng tôi nhất quyết không lùi bước."},
+  {name:"Võ Ngọc Hùng",img:"images/bachung.png",craft:"Nón lá cách tân",exp:"Hơn 15 năm",loc:"📍 Làng Kim Long, TP. Huế",quote:"Khó khăn, thử thách chính là ngọn lửa thôi thúc tôi mày mò tìm tòi.",villageHistory:"Làng nón truyền thống Kim Long, TP. Huế, Thừa Thiên Huế.",share:"Nhìn lá bàng rừng rụng đầy, tôi xót xa nảy ra ý tưởng làm nón. Ngâm lá, chải thịt lá ròng rã suốt tháng rưỡi trời, hỏng không biết bao nhiêu lần mới ra được chiếc nón thấu quang. Có lúc nản chí lắm, nhưng nghĩ đến việc tạo ra một nét chấm phá mới cho nón bài thơ xứ Huế, tôi lại tự động viên mình phải làm bằng được."}
+];
 function renderArtisans(){
   const container=document.getElementById('artisansScroll');
-  container.innerHTML=artisansData.map(art=>`<div class="art-card" data-artisan='${JSON.stringify(art)}'><div class="art-img"><div class="art-badge"><div class="art-craft">${art.craft} · ${art.exp}</div><div class="art-name">${art.name}</div><div class="art-loc">${art.craft.includes('Phú Vinh')?'📍 Làng Phú Vinh, Hà Nội':art.craft.includes('Bát Tràng')?'📍 Làng Bát Tràng, Hà Nội':art.craft.includes('Hội An')?'📍 Hội An, Quảng Nam':'📍 Sa Pa, Lào Cai'}</div></div></div><div class="art-body"><p class="art-quote">"${art.quote}"</p><div class="art-tags"><span class="art-tag">${art.craft.split(' ·')[0]}</span></div></div></div>`).join('');
-  document.querySelectorAll('.art-card').forEach(card=>{card.addEventListener('click',()=>{const data=JSON.parse(card.dataset.artisan);document.getElementById('artisanModalName').innerText=data.name;document.getElementById('artisanModalCraft').innerText=`${data.craft} · ${data.exp} kinh nghiệm`;document.getElementById('artisanModalStory').innerHTML=`<strong>Làng nghề:</strong> ${data.villageHistory}<br><br><strong>Chia sẻ:</strong> "${data.share}"`;document.getElementById('artisanModal').classList.add('active');});});
+  container.innerHTML=artisansData.map(art=>{
+    const imgStyle=art.img?`background-image:url('${art.img}');background-size:cover;background-position:center top;`:'';
+    const safeData=JSON.stringify(art).replace(/'/g,"&#39;");
+    return `<div class="art-card" data-artisan='${safeData}'><div class="art-img" style="${imgStyle}"><div class="art-badge"><div class="art-craft">${art.craft} · ${art.exp}</div><div class="art-name">${art.name}</div><div class="art-loc">${art.loc}</div></div></div><div class="art-body"><p class="art-quote">"${art.quote}"</p><div class="art-tags"><span class="art-tag">${art.craft}</span></div></div></div>`;
+  }).join('');
+  document.querySelectorAll('.art-card').forEach(card=>{card.addEventListener('click',()=>{const data=JSON.parse(card.dataset.artisan.replace(/&#39;/g,"'"));document.getElementById('artisanModalName').innerText=data.name;document.getElementById('artisanModalCraft').innerText=`${data.craft} · ${data.exp} kinh nghiệm`;document.getElementById('artisanModalStory').innerHTML=`<strong>Làng nghề:</strong> ${data.villageHistory}<br><br><strong>Chia sẻ:</strong> "${data.share}"`;document.getElementById('artisanModal').classList.add('active');});});
 }
 function closeArtisanModal(){document.getElementById('artisanModal').classList.remove('active');}
 document.querySelector('#artisanModal .close-modal').addEventListener('click',closeArtisanModal);
@@ -2419,7 +2429,7 @@ function applyTranslation(lang){
     <div class="mp-banner-wrap" id="mpBannerWrap">
       <div class="mp-banner-track" id="mpBannerTrack">
         <div class="mp-banner-slide">
-          <div class="bg" style="background:linear-gradient(135deg,#1E1610 0%,#7C4F28 55%,#B87A38 100%)"></div>
+<div class="bg" style="background-image:url('images/workshopgom.jpg');background-size:cover;background-position:center;"></div>
           <div class="content">
             <h2>🏺 Workshop Gốm Bát Tràng</h2>
             <p>Tự tay nặn gốm với nghệ nhân 700 năm kinh nghiệm · Hà Nội · 3 buổi/tuần</p>
@@ -2427,7 +2437,7 @@ function applyTranslation(lang){
           </div>
         </div>
         <div class="mp-banner-slide">
-          <div class="bg" style="background:linear-gradient(135deg,#2C1810 0%,#5A3A1A 50%,#8C6A3A 100%)"></div>
+          <div class="bg" style="background-image:url('images/workshoptre.jpg');background-size:cover;background-position:center;"></div>
           <div class="content">
             <h2>🧺 Nghệ thuật Mây Tre Đan Phú Vinh</h2>
             <p>Học kỹ thuật đan truyền thống từ làng nghề 400 năm · Hà Nội · Nhóm nhỏ 8 người</p>
@@ -2435,7 +2445,7 @@ function applyTranslation(lang){
           </div>
         </div>
         <div class="mp-banner-slide">
-          <div class="bg" style="background:linear-gradient(135deg,#1A1040 0%,#4A2860 50%,#8C5A90 100%)"></div>
+<div class="bg" style="background-image:url('images/workshopthocam.jpg');background-size:cover;background-position:center;"></div>
           <div class="content">
             <h2>🪡 Dệt Thổ Cẩm H'Mông — Sa Pa</h2>
             <p>Chạm tay vào văn hóa dân tộc · Trải nghiệm dệt vải truyền thống trên khung cửi cổ</p>
@@ -2443,7 +2453,7 @@ function applyTranslation(lang){
           </div>
         </div>
         <div class="mp-banner-slide">
-          <div class="bg" style="background:linear-gradient(135deg,#2C1008 0%,#8C3A1A 55%,#C46A38 100%)"></div>
+          <div class="bg" style="background-image:url('images/workshopsonmai.jpg');background-size:cover;background-position:center;"></div>
           <div class="content">
             <h2>🎨 Workshop Sơn Mài Hà Nội</h2>
             <p>Nghệ thuật sơn mài truyền thống Việt Nam · Tạo ra tác phẩm của riêng bạn</p>
