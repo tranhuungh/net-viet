@@ -460,6 +460,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .draw-clear-btn:hover{border-color:var(--brown);color:var(--brown)}
 .draw-applied-badge{display:none;align-items:center;gap:6px;background:#E8F4E8;border:1px solid #7A9A7A;padding:5px 10px;border-radius:6px;font-size:10px;color:#3A6A3A;margin-top:6px}
 .draw-applied-badge.show{display:flex}
+/* ===== DESIGN GALLERY ===== */
+.design-gallery-section{padding:10px 0 4px}
+.design-gallery-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.design-gallery-title{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.design-gallery-count{font-size:10px;color:var(--muted);background:var(--surface);padding:2px 7px;border-radius:10px;border:1px solid var(--border)}
+.design-gallery-empty{font-size:11px;color:var(--muted);text-align:center;padding:14px 0;font-style:italic;background:var(--surface);border-radius:8px;border:1px dashed var(--border)}
+.design-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:200px;overflow-y:auto;padding-right:2px}
+.design-gallery-grid::-webkit-scrollbar{width:4px}
+.design-gallery-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.design-gallery-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .18s;background:var(--surface)}
+.design-gallery-item:hover{border-color:var(--amber);transform:scale(1.03)}
+.design-gallery-item.selected{border-color:var(--brown);box-shadow:0 0 0 2px rgba(124,79,40,.25)}
+.design-gallery-item canvas{width:100%;height:100%;object-fit:cover;display:block}
+.design-gallery-item-label{position:absolute;bottom:0;left:0;right:0;background:rgba(30,22,16,.7);color:#fff;font-size:9px;padding:3px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em}
+.design-gallery-item-del{position:absolute;top:3px;right:3px;background:rgba(160,78,44,.85);color:#fff;border:none;width:16px;height:16px;border-radius:50%;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;padding:0}
+.design-gallery-item:hover .design-gallery-item-del{display:flex}
+.design-gallery-item-badge{position:absolute;top:3px;left:3px;background:var(--amber);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px;font-weight:600;letter-spacing:.06em;display:none}
+.design-gallery-item.selected .design-gallery-item-badge{display:block}
+.design-save-btn{width:100%;margin-top:8px;padding:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1.5px dashed var(--amber);background:transparent;color:var(--brown);cursor:pointer;border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.design-save-btn:hover{background:var(--amber);color:#fff;border-style:solid}
 /* Studio CTA */
 .studio-cta{padding:16px 28px;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .price-block small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block}
@@ -569,7 +589,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 @media(max-width:540px){.mp-grid{grid-template-columns:1fr}}
 .mp-card{background:#fff;border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .28s,transform .28s;position:relative;border:1.5px solid #EDE8E0}
 .mp-card:hover{box-shadow:0 12px 36px rgba(46,35,24,.13);transform:translateY(-4px);border-color:var(--brown)}
-.mp-card-thumb{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden}
+.mp-card-thumb{position: relative; overflow: hidden;width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden}
 .mp-card-disc-badge{position:absolute;top:10px;left:10px;background:var(--terra);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:2px;letter-spacing:.08em;text-transform:uppercase}
 .mp-card-seats{position:absolute;top:10px;right:10px;background:rgba(30,22,16,.75);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:2px;backdrop-filter:blur(4px)}
 .mp-card-liked{display:none}
@@ -1256,10 +1276,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div style="font-size:11px;color:var(--muted);line-height:1.6">Click và kéo trên model phía trên để vẽ<br>Model sẽ dừng xoay khi bạn đang vẽ</div>
           </div>
           <!-- Actions -->
-          <div class="draw-actions">
-            <button class="draw-action-btn draw-clear-btn" id="drawClearBtn">🗑 Xóa hết</button>
+         <div class="draw-actions" style="display: flex; gap: 8px; justify-content: center;">
+            <button class="draw-action-btn" id="drawUndoBtn" style="border: 1px solid var(--border); background: transparent;">↩ Undo</button>
+            <button class="draw-action-btn" id="drawRedoBtn" style="border: 1px solid var(--border); background: transparent;">↪ Redo</button>
+            <button class="draw-action-btn draw-clear-btn" id="drawClearBtn">🗑 Clear</button>
           </div>
           <div class="draw-applied-badge" id="drawAppliedBadge">✓ Đã vẽ lên model 3D</div>
+
+          <!-- DESIGN GALLERY -->
+          <div class="design-gallery-section">
+            <div class="design-gallery-header">
+              <span class="design-gallery-title">🗂 Thiết kế đã lưu</span>
+              <span class="design-gallery-count" id="galleryCount">0</span>
+            </div>
+            <div id="designGalleryGrid" class="design-gallery-grid">
+              <div class="design-gallery-empty" id="galleryEmpty" style="grid-column:1/-1">Chưa có thiết kế nào. Vẽ xong rồi lưu nhé!</div>
+            </div>
+            <button class="design-save-btn" id="saveDesignSnapshotBtn">📸 Lưu thiết kế hiện tại</button>
+          </div>
         </div>
       </div>
       <div class="studio-cta">
@@ -1325,11 +1359,11 @@ function updateLeftPanel(material){
 let currentMaterial='bamboo';
 const productDB={
   ceramic:[
-    {id:'plate',name:'Dĩa gốm',price:110000,icon:'🍽️',model:'plate'},
-    {id:'bowl',name:'Chén gốm',price:90000,icon:'🥣',model:'bowl'},
-    {id:'cup',name:'Ly gốm',price:120000,icon:'☕',model:'cup'},
-    {id:'vase',name:'Bình hoa gốm',price:250000,icon:'🏺',model:'vase'},
-    {id:'chopstick',name:'Gác đũa',price:80000,icon:'🥢',model:'chopstick'}
+    {id:'plate',name:'Dĩa gốm',price:110000,icon:'🍽️',img:'images/ceramic_plate.png',model:'plate'},
+    {id:'bowl',name:'Chén gốm',price:90000,icon:'🥣',img:'images/ceramic_bowl.png',model:'bowl'},
+    {id:'cup',name:'Ly gốm',price:120000,icon:'☕',img:'images/ceramic_cup.png',model:'cup'},
+    {id:'vase',name:'Bình hoa gốm',price:250000,icon:'🏺',img:'images/ceramic_vase.png',model:'vase'},
+    {id:'chopstick',name:'Gác đũa',price:80000,icon:'🥢',img:'images/ceramic_chopstick.png',model:'chopstick'}
   ],
   bamboo:[
     {id:'nonla_mini',name:'Móc khóa nón lá mini',price:45000,icon:'🪄',img:'images/mockhoa.png', model:'nonla_mini'},
@@ -1340,14 +1374,14 @@ const productDB={
     {id:'bag',name:'Túi xách tre',price:220000,icon:'👜',img:'images/bag.png',model:'bag'}
   ],
   brocade:[
-    {id:'wallet',name:'Ví',price:150000,icon:'👛',model:'wallet'},
-    {id:'pencil_brocade',name:'Hộp bút',price:80000,icon:'✏️',model:'pencil_brocade'},
-    {id:'rug',name:'Thảm chân',price:280000,icon:'🧶',model:'rug'},
-    {id:'bag_brocade',name:'Túi xách',price:320000,icon:'👜',model:'bag_brocade'},
-    {id:'teddy',name:'Gấu bông',price:190000,icon:'🧸',model:'teddy'}
+    {id:'wallet',name:'Ví',price:150000,icon:'👛',img:'images/wallet.png',model:'wallet'},
+    {id:'pencil_brocade',name:'Hộp bút',price:80000,icon:'✏️',img:'images/pencil_brocade.png',model:'pencil_brocade'},
+    {id:'rug',name:'Thảm chân',price:280000,icon:'🧶',img:'images/mat.png',model:'rug'},
+    {id:'bag_brocade',name:'Túi xách',price:320000,icon:'👜',img:'images/bag_brocade.png',model:'bag_brocade'},
+    {id:'teddy',name:'Gấu bông',price:190000,icon:'🧸',img:'images/teddy.png',model:'teddy'}
   ],
   paper:[
-    {id:'kit',name:'Bộ kit Giấy dó',price:99000,icon:'📦',model:'kit'}
+    {id:'kit',name:'Bộ kit Giấy dó',price:99000,icon:'📦',img:'images/kit.png',model:'kit'}
   ]
 };
 const allPatterns={
@@ -1467,6 +1501,7 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
   // Mỗi mesh có canvas riêng: strokeCanvas (nét vẽ) + compositeCanvas (base+stroke) + canvasTexture
   // key = mesh.uuid
   const meshData = new Map();
+  window._meshData = meshData; // expose để Undo/Redo/Clear dùng được
 
   // Lấy hoặc khởi tạo data cho 1 mesh
   // Lấy hoặc khởi tạo data cho 1 mesh
@@ -1480,11 +1515,12 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
 
     const tex = new THREE.CanvasTexture(strokeCanvas);
     tex.flipY = false;
+    tex.encoding = THREE.sRGBEncoding;
 
     // TẠO LAYER VẼ: Nhân bản mesh gốc và cho nó trong suốt
     const drawingLayer = mesh.clone();
-    const drawingMaterial = new THREE.MeshStandardMaterial({
-      map: tex,
+const drawingMaterial = new THREE.MeshBasicMaterial({
+        map: tex,
       transparent: true,
       depthWrite: false,
       polygonOffset: true,
@@ -1497,8 +1533,17 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
     const data = {
       strokeCanvas, strokeCtx,
       tex,
-      drawingLayer
+      drawingLayer,
+      // --- THÊM 3 DÒNG NÀY ĐỂ LÀM BỘ NHỚ ---
+      history: [],       
+      historyStep: -1,   
+      _needsSave: false  
     };
+    
+    // --- THÊM 2 DÒNG NÀY ĐỂ LƯU BƯỚC ĐẦU TIÊN (TRANG TRẮNG) ---
+    data.history.push(strokeCtx.getImageData(0, 0, PAINT_SIZE, PAINT_SIZE));
+    data.historyStep = 0;
+
     meshData.set(mesh.uuid, data);
     return data;
   }
@@ -1506,6 +1551,7 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
   // Cập nhật nét vẽ
   function flushMesh(mesh, data){
     data.tex.needsUpdate = true;
+    data._needsSave = true;
     document.getElementById('drawAppliedBadge').classList.add('show');
   }
 
@@ -1536,11 +1582,62 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
   let drawMode = 'pen', drawColor = '#7C4F28', drawSize = 16;
 
   const drawPalette = ['#7C4F28','#A04E2C','#B87A38','#1E1610','#7B8C6A','#607080','#C8A878','#E8C87A','#ffffff','#2E5A8A','#5A3A6A','#3A6A3A'];
+  const customColorPicker = document.getElementById('customColorPicker');
   const drawColorsEl = document.getElementById('drawColors');
-  drawColorsEl.innerHTML = drawPalette.map((c,i)=>`<div class="draw-color-dot${i===0?' on':''}" style="background:${c}" data-color="${c}"></div>`).join('');
-  drawColorsEl.querySelectorAll('.draw-color-dot').forEach(dot=>{
+drawColorsEl.innerHTML = drawPalette.map((c,i)=>`<div class="draw-color-dot${i===0?' on':''}" style="background:${c}" data-color="${c}"></div>`).join('') + 
+  `<div class="draw-color-dot" id="customColorBtn" style="position: relative; overflow: hidden; background: conic-gradient(red, yellow, green, blue, magenta, red); display: inline-block; vertical-align: middle; cursor: pointer; margin-left: 4px;" title="Chọn màu tùy ý">
+    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; pointer-events: none; z-index: 1;">🎨</span>
+    <input type="color" id="customColorPicker" value="#ff0000" style="position: absolute; top: -20px; left: -20px; width: 100px; height: 100px; opacity: 0; cursor: pointer; z-index: 2;">
+  </div>
+  <input type="text" id="hexColorInput" placeholder="#HEX" style="width: 60px; height: 24px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; vertical-align: middle; margin-left: 6px; font-family: monospace; font-size: 12px; outline: none; background: transparent; color: var(--dark);">`;
+    drawColorsEl.querySelectorAll('.draw-color-dot').forEach(dot=>{
     dot.addEventListener('click',()=>{
       drawColorsEl.querySelectorAll('.draw-color-dot').forEach(d=>{d.classList.remove('on');d.style.border='2px solid transparent';});
+      // LOGIC XỬ LÝ KHI CHỌN MÀU TỪ BẢNG MÀU RGB
+  // LOGIC XỬ LÝ BẢNG MÀU VÀ Ô NHẬP HEX
+  const customPicker = document.getElementById('customColorPicker');
+  const hexInput = document.getElementById('hexColorInput');
+
+  function updateCustomColor(newColor) {
+    drawColor = newColor;
+    customPicker.value = newColor;
+    hexInput.value = newColor.toUpperCase();
+
+    // Xóa viền đỏ của các nút khác và bật cho nút custom
+    document.querySelectorAll('.draw-color-dot').forEach(x => x.classList.remove('on'));
+    document.getElementById('customColorBtn').classList.add('on');
+
+    // Chuyển về Bút nếu đang dùng Tẩy
+    if (typeof drawMode !== 'undefined' && drawMode === 'eraser') {
+      drawMode = 'pen';
+      const penBtn = document.getElementById('drawPenBtn');
+      const eraserBtn = document.getElementById('drawEraserBtn');
+      if(penBtn) penBtn.classList.add('on');
+      if(eraserBtn) eraserBtn.classList.remove('on');
+    }
+  }
+
+  if (customPicker && hexInput) {
+    // 1. Khi kéo chọn từ bảng màu
+    customPicker.addEventListener('input', (e) => {
+      updateCustomColor(e.target.value);
+    });
+
+    // 2. Khi tự gõ mã HEX vào ô
+    hexInput.addEventListener('input', (e) => {
+      let val = e.target.value.trim();
+      if (!val.startsWith('#')) val = '#' + val; // Tự động thêm dấu #
+      
+      // Nếu nhập đủ mã HEX hợp lệ (6 ký tự) thì mới đổi màu
+      if (/^#[0-9A-F]{6}$/i.test(val)) {
+        updateCustomColor(val);
+      }
+    });
+
+    // Chặn click vớ vẩn
+    document.getElementById('customColorBtn').addEventListener('click', e => e.stopPropagation());
+    hexInput.addEventListener('click', e => e.stopPropagation());
+  }
       dot.classList.add('on'); dot.style.border='2px solid var(--dark)';
       drawColor = dot.dataset.color;
       drawMode = 'pen';
@@ -1562,9 +1659,9 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
   let lastMesh = null;   // mesh điểm trước
   window.isDrawTabActive = false;
 
-  document.getElementById('tabPatternBtn').addEventListener('click',()=>{ window.isDrawTabActive=true; updateCanvasCursor(); });
-  document.getElementById('tabProductBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; updateCanvasCursor(); });
-  document.getElementById('tabDecoBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; updateCanvasCursor(); });
+  document.getElementById('tabPatternBtn').addEventListener('click',()=>{ window.isDrawTabActive=true; autoRot=false; velY=0; updateCanvasCursor(); });
+  document.getElementById('tabProductBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; autoRot=true; updateCanvasCursor(); });
+  document.getElementById('tabDecoBtn').addEventListener('click',()=>{ window.isDrawTabActive=false; autoRot=true; updateCanvasCursor(); });
 
   function updateCanvasCursor(){
     const cc = document.getElementById('canvas-container');
@@ -1698,7 +1795,7 @@ const x = uv.x * PAINT_SIZE;
     isPainting = false;
     lastUV = null;
     lastMesh = null;
-    setTimeout(()=>{ if(!isPainting) autoRot=true; }, 2500);
+    // autoRot luôn = false khi đang ở draw tab, không bật lại ở đây
   }
 
   cc3d.addEventListener('mousedown', onPaintStart, true);
@@ -1708,24 +1805,6 @@ const x = uv.x * PAINT_SIZE;
   cc3d.addEventListener('touchmove',  onPaintMove,  {capture:true, passive:false});
   cc3d.addEventListener('touchend',   onPaintEnd,   {capture:true, passive:false});
 
-  // Clear: xóa nét vẽ, khôi phục material gốc
-  document.getElementById('drawClearBtn').addEventListener('click',()=>{
-    prodGroup.traverse(c=>{
-      if(!c.isMesh) return;
-      const d = meshData.get(c.uuid);
-      if(d){
-        d.strokeCtx.clearRect(0, 0, PAINT_SIZE, PAINT_SIZE);
-        c.material.map = d.origMap;
-        c.material.color.copy(d.origColor);
-        c.material.needsUpdate = true;
-        d.tex.dispose();
-      }
-    });
-    meshData.clear();
-    currentTex = null;
-    document.getElementById('drawAppliedBadge').classList.remove('show');
-    showToast('Đã xóa hết nét vẽ','🗑');
-  });
 })();
 
 // ===== CART =====
@@ -1786,14 +1865,58 @@ document.getElementById('tabPatternBtn').addEventListener('click',()=>switchTab(
 document.querySelectorAll('.fbtn').forEach(btn=>{btn.addEventListener('click',()=>{const filter=btn.dataset.filter;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.querySelectorAll('.prod-card').forEach(card=>{if(filter==='all')card.style.display='';else if(card.dataset.category===filter)card.style.display='';else card.style.display='none';});});});
 
 // ===== 3D CONTROLS =====
-let drag=false,pX=0,pY=0,rotY=0,rotX=0,autoRot=true,lastDragTime=0;
-// isDrawTabActive is defined in the paint IIFE below; default false here
+let drag=false,pX=0,pY=0,rotY=0,rotX=0,autoRot=true;
+let velY=0; // velocity cho quán tính
 if(typeof isDrawTabActive==='undefined') window.isDrawTabActive=false;
-rend.domElement.addEventListener('mousedown',e=>{if(window.isDrawTabActive)return;drag=true;pX=e.clientX;pY=e.clientY;autoRot=false;e.preventDefault()});
-window.addEventListener('mouseup',()=>{if(drag){drag=false;lastDragTime=Date.now();setTimeout(()=>{if(Date.now()-lastDragTime>2000)autoRot=true;},2500);}});
-window.addEventListener('mousemove',e=>{if(!drag||window.isDrawTabActive)return;const dx=e.clientX-pX,dy=e.clientY-pY;rotY+=dx*.009;rotX=Math.max(-Math.PI*.48,Math.min(Math.PI*.48,rotX+dy*.007));pX=e.clientX;pY=e.clientY;});
+
+rend.domElement.addEventListener('mousedown',e=>{
+  if(window.isDrawTabActive)return;
+  drag=true; pX=e.clientX; pY=e.clientY;
+  autoRot=false; velY=0;
+  e.preventDefault();
+});
+window.addEventListener('mouseup',()=>{
+  if(!drag)return;
+  drag=false;
+  // Không bật autoRot lại — để người dùng chủ động giữ nguyên góc nhìn
+  // autoRot chỉ bật lại khi người dùng đổi tab sản phẩm
+});
+window.addEventListener('mousemove',e=>{
+  if(!drag||window.isDrawTabActive)return;
+  const dx=e.clientX-pX, dy=e.clientY-pY;
+  velY=dx*.009;
+  rotY+=velY;
+  rotX=Math.max(-Math.PI*.48,Math.min(Math.PI*.48,rotX+dy*.007));
+  pX=e.clientX; pY=e.clientY;
+});
+
+// Touch support cho xoay 3D (khi không ở draw mode)
+rend.domElement.addEventListener('touchstart',e=>{
+  if(window.isDrawTabActive)return;
+  drag=true; pX=e.touches[0].clientX; pY=e.touches[0].clientY;
+  autoRot=false; velY=0;
+  e.preventDefault();
+},{passive:false});
+window.addEventListener('touchend',()=>{ if(drag)drag=false; });
+window.addEventListener('touchmove',e=>{
+  if(!drag||window.isDrawTabActive)return;
+  const dx=e.touches[0].clientX-pX, dy=e.touches[0].clientY-pY;
+  velY=dx*.009; rotY+=velY;
+  rotX=Math.max(-Math.PI*.48,Math.min(Math.PI*.48,rotX+dy*.007));
+  pX=e.touches[0].clientX; pY=e.touches[0].clientY;
+},{passive:true});
+
 rend.domElement.addEventListener('wheel',e=>{cam.position.z=Math.max(4,Math.min(10,cam.position.z+e.deltaY*.015));},{passive:true});
-function loop(){requestAnimationFrame(loop);if(autoRot)rotY+=.005;prodGroup.rotation.y=rotY;prodGroup.rotation.x=rotX;rend.render(scene,cam);}loop();
+function loop(){
+  requestAnimationFrame(loop);
+  if(autoRot){ rotY+=.005; }
+  else if(!drag && Math.abs(velY)>0.0001){
+    // quán tính mượt khi thả tay
+    rotY+=velY; velY*=0.88;
+  }
+  prodGroup.rotation.y=rotY; prodGroup.rotation.x=rotX;
+  rend.render(scene,cam);
+}loop();
 new ResizeObserver(()=>{const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;cam.aspect=w/h;cam.updateProjectionMatrix();rend.setSize(w,h);}).observe(container);
 document.getElementById('lightRange').addEventListener('input',e=>key.intensity=parseFloat(e.target.value));
 document.getElementById('roughRange').addEventListener('input',e=>{baseRoughness=1-parseFloat(e.target.value);prodGroup.traverse(c=>{if(c.isMesh)c.material.roughness=1-parseFloat(e.target.value);});});
@@ -1867,26 +1990,31 @@ document.getElementById('realModelInput').addEventListener('change',function(e){
 
 // ===== PRODUCTS LIST =====
 const productsData=[
-  {cat:"gốm",name:"Dĩa gốm",origin:"Làng Bát Tràng · Hà Nội",price:"110k",icon:"🍽️",material:"ceramic"},
-  {cat:"gốm",name:"Chén gốm",origin:"Làng Bát Tràng · Hà Nội",price:"90k",icon:"🥣",material:"ceramic"},
-  {cat:"gốm",name:"Ly gốm",origin:"Làng Bát Tràng · Hà Nội",price:"120k",icon:"☕",material:"ceramic"},
-  {cat:"gốm",name:"Bình hoa gốm",origin:"Làng Bát Tràng · Hà Nội",price:"250k",icon:"🏺",material:"ceramic"},
-  {cat:"gốm",name:"Gác đũa",origin:"Làng Bát Tràng · Hà Nội",price:"80k",icon:"🥢",material:"ceramic"},
-  {cat:"mây tre đan",name:"Móc khóa nón lá mini",origin:"Làng Phú Vinh · Hà Nội",price:"45k",icon:"🪄",material:"bamboo"},
-  {cat:"mây tre đan",name:"Nón lá thường",origin:"Làng Phú Vinh · Hà Nội",price:"85k",icon:"🧺",material:"bamboo"},
-  {cat:"mây tre đan",name:"Nhà thú cưng",origin:"Làng Phú Vinh · Hà Nội",price:"350k",icon:"🏠",material:"bamboo"},
-  {cat:"mây tre đan",name:"Đồ chơi thú cưng",origin:"Làng Phú Vinh · Hà Nội",price:"95k",icon:"🐾",material:"bamboo"},
-  {cat:"mây tre đan",name:"Hộp bút tre",origin:"Làng Phú Vinh · Hà Nội",price:"70k",icon:"✏️",material:"bamboo"},
-  {cat:"mây tre đan",name:"Túi xách tre",origin:"Làng Phú Vinh · Hà Nội",price:"220k",icon:"👜",material:"bamboo"},
-  {cat:"thổ cẩm",name:"Ví",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"150k",icon:"👛",material:"brocade"},
-  {cat:"thổ cẩm",name:"Hộp bút",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"80k",icon:"✏️",material:"brocade"},
-  {cat:"thổ cẩm",name:"Thảm chân",origin:"Sa Pa · Lào Cai",price:"280k",icon:"🧶",material:"brocade"},
-  {cat:"thổ cẩm",name:"Túi xách",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"320k",icon:"👜",material:"brocade"},
-  {cat:"thổ cẩm",name:"Gấu bông",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"190k",icon:"🧸",material:"brocade"},
-  {cat:"giấy dó",name:"Bộ kit Giấy dó",origin:"Làng nghề Yên Thái · Hà Nội",price:"99k",icon:"📦",material:"paper"}
+  {cat:"gốm",name:"Dĩa gốm",origin:"Làng Bát Tràng · Hà Nội",price:"110k",icon:"🍽️",img:'images/ceramic_plate.png',material:"ceramic"},
+  {cat:"gốm",name:"Chén gốm",origin:"Làng Bát Tràng · Hà Nội",price:"90k",icon:"🥣",img:'images/ceramic_bowl.png',material:"ceramic"},
+  {cat:"gốm",name:"Ly gốm",origin:"Làng Bát Tràng · Hà Nội",price:"120k",icon:"☕",img:'images/ceramic_cup.png',material:"ceramic"},
+  {cat:"gốm",name:"Bình hoa gốm",origin:"Làng Bát Tràng · Hà Nội",price:"250k",icon:"🏺",img:'images/ceramic_vase.png',material:"ceramic"},
+  {cat:"gốm",name:"Gác đũa",origin:"Làng Bát Tràng · Hà Nội",price:"80k",icon:"🥢",img:'images/ceramic_chopstick.png',material:"ceramic"},
+  {cat:"mây tre đan",name:"Móc khóa nón lá mini",origin:"Làng Phú Vinh · Hà Nội",price:"45k",icon:"🪄",img:'images/mockhoa.png',material:"bamboo"},
+  {cat:"mây tre đan",name:"Nón lá thường",origin:"Làng Phú Vinh · Hà Nội",price:"85k",icon:"🧺",img:'images/non-la.png',material:"bamboo"},
+  {cat:"mây tre đan",name:"Nhà thú cưng",origin:"Làng Phú Vinh · Hà Nội",price:"350k",icon:"🏠",img:'images/pethouse.png',material:"bamboo"},
+  {cat:"mây tre đan",name:"Đồ chơi thú cưng",origin:"Làng Phú Vinh · Hà Nội",price:"95k",icon:"🐾",img:'images/pettoy.png',material:"bamboo"},
+  {cat:"mây tre đan",name:"Hộp bút tre",origin:"Làng Phú Vinh · Hà Nội",price:"70k",icon:"✏️",img:'images/pencilcase.png',material:"bamboo"},
+  {cat:"mây tre đan",name:"Túi xách tre",origin:"Làng Phú Vinh · Hà Nội",price:"220k",icon:"👜",img:'images/bag.png',material:"bamboo"},
+  {cat:"thổ cẩm",name:"Ví",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"150k",icon:"👛",img:'images/wallet.png',material:"brocade"},
+  {cat:"thổ cẩm",name:"Hộp bút",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"80k",icon:"✏️",img:'images/pencil_brocade.png',material:"brocade"},
+  {cat:"thổ cẩm",name:"Thảm chân",origin:"Sa Pa · Lào Cai",price:"280k",icon:"🧶",img:'images/mat.png',material:"brocade"},
+  {cat:"thổ cẩm",name:"Túi xách",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"320k",icon:"👜",img:'images/bag_brocade.png',material:"brocade"},
+  {cat:"thổ cẩm",name:"Gấu bông",origin:"Làng dệt Mỹ Nghiệp · Ninh Thuận",price:"190k",icon:"🧸",img:'images/teddy.png',material:"brocade"},
+  {cat:"giấy dó",name:"Bộ kit Giấy dó",origin:"Làng nghề Yên Thái · Hà Nội",price:"99k",icon:"📦",img:'images/kit.png',material:"paper"}
 ];
 const productContainer=document.getElementById('productList');
-if(productContainer)productContainer.innerHTML=productsData.map(p=>`<div class="prod-card" data-category="${p.cat}"><div class="prod-tag">Tinh hoa</div><div class="prod-thumb" style="background:linear-gradient(145deg,#EAE4D8,#C0B8A4)">${p.icon}</div><div class="prod-info"><div><div class="prod-name">${p.name}</div><div class="prod-origin">${p.origin}</div></div><div class="prod-price">${p.price}</div></div><button class="prod-cta-hover" onclick="openStudioWithMaterial('${p.material}')">Tùy chỉnh 3D →</button></div>`).join('');
+if(productContainer)productContainer.innerHTML=productsData.map(p=>`<div class="prod-card" data-category="${p.cat}"><div class="prod-tag">Tinh hoa</div><div class=\"prod-thumb\" style=\"background:linear-gradient(145deg,#EAE4D8,#C0B8A4)\">
+  ${p.img
+    ? `<img src=\"${p.img}\" alt=\"${p.name}\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover;\">`
+    : p.icon
+  }
+</div><div class="prod-info"><div><div class="prod-name">${p.name}</div><div class="prod-origin">${p.origin}</div></div><div class="prod-price">${p.price}</div></div><button class="prod-cta-hover" onclick="openStudioWithMaterial('${p.material}')">Tùy chỉnh 3D →</button></div>`).join('');
 
 // ===== CATEGORY PAGE =====
 const catMeta={
@@ -2482,7 +2610,7 @@ function applyTranslation(lang){
 <script>
 // ===== CRAFT EXPLORER DATA =====
 const wsUpcomingData=[
-  {icon:'🏺',name:'Gốm Bát Tràng — Buổi chiều',date:'Thứ 7, 14/6/2025',seats:3,totalSeats:12,price:'350.000 ₫',bg:'#FFF3E0',cat:'gom'},
+  {icon:'🏺',img:'images/gombatrang.png',name:'Gốm Bát Tràng — Buổi chiều',date:'Thứ 7, 14/6/2025',seats:3,totalSeats:12,price:'350.000 ₫',bg:'#FFF3E0',cat:'gom'},
   {icon:'🧺',name:'Đan Mây Tre Phú Vinh',date:'Chủ nhật, 15/6/2025',seats:5,totalSeats:10,price:'280.000 ₫',bg:'#E8F5E9',cat:'tre'},
   {icon:'🏮',name:'Làm Đèn Lồng Hội An',date:'Thứ 6, 13/6/2025',seats:2,totalSeats:8,price:'320.000 ₫',bg:'#FFF9C4',cat:'den'},
   {icon:'🪡',name:'Dệt Thổ Cẩm H\'Mông',date:'Thứ 7, 21/6/2025',seats:7,totalSeats:10,price:'420.000 ₫',bg:'#F3E5F5',cat:'tho'},
@@ -2494,6 +2622,7 @@ const wsUpcomingData=[
 const wsProductData=[
   {
     id:'gom-bat-trang-buoi-sang',icon:'🏺',
+    img:'images/gombatrang.png',
     name:'Workshop Gốm Bát Tràng — Buổi sáng',
     craft:'Gốm sứ · Bát Tràng',
     artisan:'Nghệ nhân Nguyễn Văn Hùng',
@@ -2511,6 +2640,7 @@ const wsProductData=[
   },
   {
     id:'tre-phu-vinh',icon:'🧺',
+        img:'images/dantrephuvinh.png',
     name:'Đan Mây Tre Phú Vinh — Nhóm nhỏ',
     craft:'Mây tre đan · Phú Vinh',
     artisan:'Nghệ nhân Lê Thị Mai',
@@ -2528,6 +2658,7 @@ const wsProductData=[
   },
   {
     id:'den-long-hoi-an',icon:'🏮',
+          img:'images/denlonghoian.png',
     name:'Làm Đèn Lồng Lụa Hội An',
     craft:'Đèn lồng · Hội An',
     artisan:'Nghệ nhân Trần Văn An',
@@ -2545,6 +2676,7 @@ const wsProductData=[
   },
   {
     id:'tho-cam-hmong',icon:'🪡',
+            img:'images/thocamhmong.png',
     name:'Dệt Thổ Cẩm H\'Mông — Sa Pa',
     craft:'Thổ cẩm · H\'Mông',
     artisan:'Nghệ nhân Giàng Thị Pa',
@@ -2562,6 +2694,7 @@ const wsProductData=[
   },
   {
     id:'giay-do-yen-thai',icon:'📜',
+            img:'images/giaydoyenthai.png',
     name:'Làm Giấy Dó Thủ Công Yên Thái',
     craft:'Giấy Dó · Hà Nội',
     artisan:'Nghệ nhân Phạm Thu Hà',
@@ -2579,6 +2712,7 @@ const wsProductData=[
   },
   {
     id:'son-mai-ha-noi',icon:'🎨',
+            img:'images/sonmai.png',
     name:'Sơn Mài Truyền Thống — Hà Nội',
     craft:'Sơn mài · Hà Nội',
     artisan:'Nghệ nhân Lê Quốc Bảo',
@@ -2596,6 +2730,7 @@ const wsProductData=[
   },
   {
     id:'dieu-khac-go',icon:'🪵',
+            img:'images/dieukhacgo.png',
     name:'Điêu Khắc Gỗ — Làng Đồng Kỵ',
     craft:'Điêu khắc gỗ · Bắc Ninh',
     artisan:'Nghệ nhân Đinh Công Đức',
@@ -2613,6 +2748,7 @@ const wsProductData=[
   },
   {
     id:'lua-van-phuc',icon:'🎀',
+            img:'images/lua.png',
     name:'Dệt Lụa Tơ Tằm Vạn Phúc',
     craft:'Lụa tơ tằm · Hà Đông',
     artisan:'Nghệ nhân Vũ Lan Anh',
@@ -2630,6 +2766,7 @@ const wsProductData=[
   },
   {
     id:'gom-bat-trang-chieu',icon:'🏺',
+            img:'images/gombattrang.png',
     name:'Gốm Bát Tràng — Trang trí Men',
     craft:'Gốm sứ · Bát Tràng',
     artisan:'Nghệ nhân Nguyễn Thị Lan',
@@ -2673,7 +2810,10 @@ function renderMpProducts(filter){
   grid.innerHTML=data.map(p=>`
     <div class="mp-card" onclick="openWorkshopDetail('${p.id}')">
       <div class="mp-card-thumb" style="background:${p.bg}">
-        <span>${p.icon}</span>
+  ${p.img
+    ? `<img src="${p.img}" alt="${p.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
+    : `<span>${p.icon}</span>`
+  }
         ${p.seats<=3?`<div class="mp-card-disc-badge">🔥 Gần đầy</div>`:''}
         <div class="mp-card-seats" style="${p.seats<=3?'color:#FF9A6C':''}">Còn ${p.seats} chỗ</div>
       </div>
@@ -2796,7 +2936,136 @@ function mpTick(){
 }
 setInterval(mpTick,1000);
 
-// ===== MOBILE MENU =====
+// ===== DESIGN GALLERY =====
+  (function(){
+    const savedDesigns = []; // { id, name, thumbnails: [{uuid, imageData}], productName, icon, price, material }
+    let selectedDesignId = null;
+
+    function captureSnapshot(){
+      // Chụp snapshot tất cả meshData hiện tại
+      const meshData = window._meshData;
+      if(!meshData) return null;
+      const thumbnails = [];
+      meshData.forEach((data, uuid) => {
+        // Tạo thumbnail nhỏ 128x128
+        const thumb = document.createElement('canvas');
+        thumb.width = thumb.height = 128;
+        const tCtx = thumb.getContext('2d');
+        tCtx.drawImage(data.strokeCanvas, 0, 0, 128, 128);
+        thumbnails.push({ uuid, imageData: thumb.toDataURL('image/png') });
+      });
+      return thumbnails;
+    }
+
+    function restoreSnapshot(design){
+      const meshData = window._meshData;
+      if(!meshData) return;
+      design.thumbnails.forEach(({ uuid, imageData }) => {
+        if(!meshData.has(uuid)) return;
+        const data = meshData.get(uuid);
+        const img = new Image();
+        img.onload = () => {
+          const w = data.strokeCanvas.width, h = data.strokeCanvas.height;
+          data.strokeCtx.clearRect(0, 0, w, h);
+          data.strokeCtx.drawImage(img, 0, 0, w, h);
+          data.tex.needsUpdate = true;
+          // Push into history
+          data.historyStep++;
+          data.history.length = data.historyStep;
+          data.history.push(data.strokeCtx.getImageData(0, 0, w, h));
+        };
+        img.src = imageData;
+      });
+      if(typeof showToast === 'function') showToast('Đã khôi phục thiết kế: ' + design.name, '🎨');
+    }
+
+    function renderGallery(){
+      const grid = document.getElementById('designGalleryGrid');
+      const countEl = document.getElementById('galleryCount');
+      const emptyEl = document.getElementById('galleryEmpty');
+      if(!grid) return;
+      countEl.textContent = savedDesigns.length;
+      if(!savedDesigns.length){
+        grid.innerHTML = '';
+        grid.appendChild(emptyEl || (() => {
+          const d = document.createElement('div');
+          d.className = 'design-gallery-empty'; d.id = 'galleryEmpty';
+          d.style.gridColumn = '1/-1';
+          d.textContent = 'Chưa có thiết kế nào. Vẽ xong rồi lưu nhé!';
+          return d;
+        })());
+        return;
+      }
+      grid.innerHTML = savedDesigns.map((d, i) => {
+        // Pick first thumbnail to preview
+        const thumb = d.thumbnails && d.thumbnails[0] ? d.thumbnails[0].imageData : null;
+        const isSelected = d.id === selectedDesignId;
+        return `<div class="design-gallery-item${isSelected?' selected':''}" data-id="${d.id}" title="${d.name} · ${d.productName}">
+          ${thumb
+            ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="thumbnail">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px">${d.icon}</div>`}
+          <span class="design-gallery-item-badge">✓</span>
+          <span class="design-gallery-item-label">${d.name}</span>
+          <button class="design-gallery-item-del" data-del="${d.id}" title="Xóa">✕</button>
+        </div>`;
+      }).join('');
+
+      // Events
+      grid.querySelectorAll('.design-gallery-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if(e.target.dataset.del) return;
+          const id = el.dataset.id;
+          const design = savedDesigns.find(d => d.id == id);
+          if(!design) return;
+          selectedDesignId = id;
+          renderGallery();
+          restoreSnapshot(design);
+        });
+      });
+      grid.querySelectorAll('[data-del]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.del;
+          const idx = savedDesigns.findIndex(d => d.id == id);
+          if(idx !== -1) savedDesigns.splice(idx, 1);
+          if(selectedDesignId === id) selectedDesignId = null;
+          renderGallery();
+          if(typeof showToast === 'function') showToast('Đã xóa thiết kế', '🗑');
+        });
+      });
+    }
+
+    document.getElementById('saveDesignSnapshotBtn').addEventListener('click', () => {
+      const thumbnails = captureSnapshot();
+      const hasDraw = thumbnails && thumbnails.some(t => {
+        // Check if anything was drawn (not blank)
+        const tmp = document.createElement('canvas'); tmp.width = tmp.height = 4;
+        const ctx = tmp.getContext('2d');
+        const img = new Image(); 
+        // Quick check: just save regardless, user knows if it's blank
+        return true;
+      });
+      const n = savedDesigns.length + 1;
+      const productName = document.getElementById('modelLabel')?.textContent || 'Sản phẩm';
+      const design = {
+        id: Date.now().toString(),
+        name: 'Thiết kế #' + n,
+        thumbnails: thumbnails || [],
+        productName,
+        icon: typeof currentIcon !== 'undefined' ? currentIcon : '🎨',
+        price: typeof currentPrice !== 'undefined' ? currentPrice : 0,
+        material: typeof currentMaterial !== 'undefined' ? currentMaterial : ''
+      };
+      savedDesigns.push(design);
+      selectedDesignId = design.id;
+      renderGallery();
+      if(typeof showToast === 'function') showToast('Đã lưu: ' + design.name, '📸');
+    });
+
+    // Re-render gallery when studio opens (in case model changed)
+    renderGallery();
+  })();
+
 function toggleMobileMenu(){
   const menu=document.getElementById('mobileMenu');
   const btn=document.getElementById('hamburgerBtn');
@@ -2827,5 +3096,88 @@ function closeMarketplace(){
   document.getElementById('marketplaceOverlay').classList.remove('open');
   document.body.style.overflow='';
 }
+// --- HÀM CHỤP ẢNH CANVAS VÀO LỊCH SỬ ---
+  function saveDrawHistory(data) {
+    const w = data.strokeCanvas.width;
+    const h = data.strokeCanvas.height;
+    data.historyStep++;
+    data.history.length = data.historyStep; 
+    data.history.push(data.strokeCtx.getImageData(0, 0, w, h));
+  }
+
+  // --- LƯU BƯỚC VẼ KHI NHẢ CHUỘT ---
+ window.addEventListener('pointerup', ()=>{
+    // Lưu lịch sử nét vẽ ngay khi vừa nhả chuột
+    const meshData = window._meshData;
+    if (meshData) {
+      meshData.forEach((data) => {
+        if (data._needsSave) {
+          const w = data.strokeCanvas.width;
+          const h = data.strokeCanvas.height;
+          data.historyStep++;
+          data.history.length = data.historyStep; 
+          data.history.push(data.strokeCtx.getImageData(0, 0, w, h));
+          data._needsSave = false;
+        }
+      });
+    }
+  });
+
+  // --- HÀM CẬP NHẬT 3D AN TOÀN (KHÔNG GÂY ĐƠ MÁY) ---
+  function forceRender() {
+      if (typeof renderer !== 'undefined' && typeof scene !== 'undefined' && typeof camera !== 'undefined') {
+          renderer.render(scene, camera);
+      }
+  }
+// --- LOGIC NÚT UNDO ---
+  document.getElementById('drawUndoBtn').addEventListener('click', () => {
+    const meshData = window._meshData;
+    if (!meshData) return;
+    meshData.forEach((data) => {
+      if (data.historyStep > 0) {
+        data.historyStep--;
+        data.strokeCtx.putImageData(data.history[data.historyStep], 0, 0);
+        data.tex.needsUpdate = true;
+      }
+    });
+    if (typeof forceRender === 'function') forceRender();
+  });
+
+  // --- LOGIC NÚT REDO ---
+  document.getElementById('drawRedoBtn').addEventListener('click', () => {
+    const meshData = window._meshData;
+    if (!meshData) return;
+    meshData.forEach((data) => {
+      if (data.historyStep < data.history.length - 1) {
+        data.historyStep++;
+        data.strokeCtx.putImageData(data.history[data.historyStep], 0, 0);
+        data.tex.needsUpdate = true;
+      }
+    });
+    if (typeof forceRender === 'function') forceRender();
+  });
+
+  // --- LOGIC NÚT CLEAR ---
+  document.getElementById('drawClearBtn').addEventListener('click', () => {
+    const meshData = window._meshData;
+    if (!meshData) return;
+    let hasCleared = false;
+    meshData.forEach((data) => {
+      const w = data.strokeCanvas.width;
+      const h = data.strokeCanvas.height;
+      data.strokeCtx.clearRect(0, 0, w, h);
+      data.tex.needsUpdate = true;
+      data.historyStep++;
+      data.history.length = data.historyStep;
+      data.history.push(data.strokeCtx.getImageData(0, 0, w, h));
+      hasCleared = true;
+    });
+    if (hasCleared) {
+      const badge = document.getElementById('drawAppliedBadge');
+      if (badge) badge.classList.remove('show');
+      if (typeof showToast === 'function') showToast('Đã xóa hết nét vẽ', '🗑');
+      if (typeof forceRender === 'function') forceRender();
+    }
+  });
 </script>
 </body>
