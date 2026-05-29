@@ -1596,9 +1596,9 @@ function saveDesign(){addToCart(currentName,currentPrice,currentIcon);openCart()
     const r = drawMode === 'eraser' ? drawSize * 2 : drawSize;
 
 const x1 = uvFrom.x * PAINT_SIZE;
-    const y1 = (1 - uvFrom.y) * PAINT_SIZE;
+    const y1 = uvFrom.y * PAINT_SIZE;
     const x2 = uvTo.x * PAINT_SIZE;
-    const y2 = (1 - uvTo.y) * PAINT_SIZE;
+    const y2 = uvTo.y * PAINT_SIZE;
 
     if(drawMode === 'eraser'){
       // Xóa dọc theo đường
@@ -1641,7 +1641,7 @@ const x1 = uvFrom.x * PAINT_SIZE;
     const ctx = d.strokeCtx;
     const r = drawMode === 'eraser' ? drawSize * 2 : drawSize;
 const x = uv.x * PAINT_SIZE;
-    const y = (1 - uv.y) * PAINT_SIZE;
+    const y =  uv.y * PAINT_SIZE;
 
     if(drawMode === 'eraser'){
       ctx.save();
