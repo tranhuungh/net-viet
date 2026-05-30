@@ -28,6 +28,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+@keyframes spinLoader{to{transform:rotate(360deg)}}
 .cursor{width:9px;height:9px;background:var(--brown);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s}
 .cursor-ring{width:32px;height:32px;border:1.5px solid rgba(124,79,40,.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s}
 body:has(a:hover) .cursor-ring,body:has(button:hover) .cursor-ring{width:52px;height:52px;border-color:var(--brown)}
@@ -279,9 +280,8 @@ body:has(a:hover) .cursor-ring,body:has(button:hover) .cursor-ring{width:52px;he
 .art-intro p{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1.75;color:var(--text2);font-weight:300;font-style:italic}
 .art-scroll{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
 .art-scroll::-webkit-scrollbar{display:none}
-.art-card{flex-shrink:0;width:280px;background:#fff;transition:transform .35s;border-radius:4px;overflow:hidden}
-.art-card:hover{transform:translateY(-6px)}
-.art-img{height:320px;background:linear-gradient(145deg,#E8DECE,#D4C4AE);display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden}
+.art-card{flex-shrink:0;width:280px;background:#fff;transition:transform .35s;border-radius:4px;overflow:hidden;contain:layout style}
+.art-card:hover{transform:translateY(-6px)}.art-img{height:320px;background:linear-gradient(145deg,#E8DECE,#D4C4AE);display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden}
 .art-badge{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(46,35,24,.85),transparent);padding:36px 20px 18px}
 .art-craft{font-size: 9.5px; /* Nhích size lên nửa pixel cho chữ dễ thở */
   letter-spacing: .22em; /* Tăng tracking thêm một chút xíu nhìn sẽ "tây" hơn */
@@ -1097,25 +1097,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <!-- Category Cards -->
     <div class="category-grid">
       <div class="cat-card active" onclick="openCategoryPage('bamboo')">
-        <div class="cat-placeholder cat-placeholder-bamboo"><img src="images/bamboo.jpg" alt="Mây Tre Đan" class="cat-placeholder-img"></div>
+        <div class="cat-placeholder cat-placeholder-bamboo"><img src="images/bamboo.jpg" alt="Mây Tre Đan" class="cat-placeholder-img" loading="lazy" decoding="async"></div>
         <h4>Mây, Tre Đan</h4>
         <p>Chất liệu mộc mạc, điểm nhấn tinh tế cho mọi góc nhà.</p>
         <div class="cat-arrow">→</div>
       </div>
       <div class="cat-card" onclick="openCategoryPage('ceramic')">
-        <div class="cat-placeholder cat-placeholder-ceramic"><img src="images/ceramic.jpg" alt="Gốm" class="cat-placeholder-img"></div>
+        <div class="cat-placeholder cat-placeholder-ceramic"><img src="images/ceramic.jpg" alt="Gốm" class="cat-placeholder-img" loading="lazy" decoding="async"></div>
         <h4>Gốm</h4>
         <p>Đậm chất nghệ, chuẩn gu cho những tâm hồn duy mỹ.</p>
         <div class="cat-arrow">→</div>
       </div>
       <div class="cat-card" onclick="openCategoryPage('brocade')">
-        <div class="cat-placeholder cat-placeholder-brocade"><img src="images/brocade.jpg" alt="Thổ Cẩm" class="cat-placeholder-img"></div>
+        <div class="cat-placeholder cat-placeholder-brocade"><img src="images/brocade.jpg" alt="Thổ Cẩm" class="cat-placeholder-img" loading="lazy" decoding="async"></div>
         <h4>Thổ Cẩm</h4>
         <p>Họa tiết bản sắc, biến tấu đương đại.</p>
         <div class="cat-arrow">→</div>
       </div>
       <div class="cat-card" onclick="openCategoryPage('paper')">
-        <div class="cat-placeholder cat-placeholder-paper"><img src="images/paper.jpg" alt="Giấy Dó DIY Kit" class="cat-placeholder-img"></div>
+        <div class="cat-placeholder cat-placeholder-paper"><img src="images/paper.jpg" alt="Giấy Dó DIY Kit" class="cat-placeholder-img" loading="lazy" decoding="async"></div>
         <h4>Giấy Dó DIY Kit</h4>
         <p>Tự do sáng tạo cùng giá trị văn hóa truyền thống.</p>
         <div class="cat-arrow">→</div>
@@ -1239,7 +1239,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="live-dot">Live Preview</div>
         <span class="model-name" id="modelLabel">Túi xách tre</span>
       </div>
-      <div id="canvas-container"><div class="rotate-hint">↺ Kéo để xoay · Scroll để zoom</div></div>
+      <div id="canvas-container"><div class="rotate-hint">↺ Kéo để xoay · Scroll để zoom</div><div id="modelLoadingSpinner" style="position:absolute;inset:0;z-index:10;flex-direction:column;align-items:center;justify-content:center;background:rgba(237,232,223,0.85);gap:12px;pointer-events:none;display:none"><div style="width:36px;height:36px;border:3px solid rgba(124,79,40,.2);border-top-color:var(--brown);border-radius:50%;animation:spinLoader .7s linear infinite"></div><span style="font-size:12px;color:var(--brown);font-weight:600;letter-spacing:.06em">Đang tải model…</span></div></div>
       <div class="customizer">
         <div class="ctabs">
           <button class="ctab on" id="tabProductBtn">Sản phẩm</button>
@@ -1852,10 +1852,28 @@ const artisansData=[
 function renderArtisans(){
   const container=document.getElementById('artisansScroll');
   container.innerHTML=artisansData.map(art=>{
-    const imgStyle=art.img?`background-image:url('${art.img}');background-size:cover;background-position:center top;`:'';
+    const imgAttr=art.img?`data-bg="${art.img}"`:'';
     const safeData=JSON.stringify(art).replace(/'/g,"&#39;");
-    return `<div class="art-card" data-artisan='${safeData}'><div class="art-img" style="${imgStyle}"><div class="art-badge"><div class="art-craft">${art.craft} · ${art.exp}</div><div class="art-name">${art.name}</div><div class="art-loc">${art.loc}</div></div></div><div class="art-body"><p class="art-quote">"${art.quote}"</p><div class="art-tags"><span class="art-tag">${art.craft}</span></div></div></div>`;
+    return `<div class="art-card" data-artisan='${safeData}'><div class="art-img" ${imgAttr}><div class="art-badge"><div class="art-craft">${art.craft} · ${art.exp}</div><div class="art-name">${art.name}</div><div class="art-loc">${art.loc}</div></div></div><div class="art-body"><p class="art-quote">"${art.quote}"</p><div class="art-tags"><span class="art-tag">${art.craft}</span></div></div></div>`;
   }).join('');
+  // Lazy load artisan background images
+  const lazyBgs = container.querySelectorAll('.art-img[data-bg]');
+  if('IntersectionObserver' in window){
+    const bgObs = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const el=entry.target;
+          el.style.backgroundImage=`url('${el.dataset.bg}')`;
+          el.style.backgroundSize='cover';
+          el.style.backgroundPosition='center top';
+          bgObs.unobserve(el);
+        }
+      });
+    },{rootMargin:'200px'});
+    lazyBgs.forEach(el=>bgObs.observe(el));
+  } else {
+    lazyBgs.forEach(el=>{el.style.backgroundImage=`url('${el.dataset.bg}')`;el.style.backgroundSize='cover';el.style.backgroundPosition='center top';});
+  }
   document.querySelectorAll('.art-card').forEach(card=>{card.addEventListener('click',()=>{const data=JSON.parse(card.dataset.artisan.replace(/&#39;/g,"'"));document.getElementById('artisanModalName').innerText=data.name;document.getElementById('artisanModalCraft').innerText=`${data.craft} · ${data.exp} kinh nghiệm`;document.getElementById('artisanModalStory').innerHTML=`<strong>Làng nghề:</strong> ${data.villageHistory}<br><br><strong>Chia sẻ:</strong> "${data.share}"`;document.getElementById('artisanModal').classList.add('active');});});
 }
 function closeArtisanModal(){document.getElementById('artisanModal').classList.remove('active');}
@@ -1948,7 +1966,22 @@ document.getElementById('fileIn').addEventListener('change',e=>{if(e.target.file
 // ===== REAL MODEL IMPORT =====
 let usingRealModel=false;
 const gltfLoader=new THREE.GLTFLoader();
-function loadModelFromUrl(url, onSuccess) {
+const _modelCache = new Map(); // cache model theo URL
+function _showModelSpinner(show){
+  const sp=document.getElementById('modelLoadingSpinner');
+  if(sp) sp.style.display = show ? 'flex' : 'none';
+}function loadModelFromUrl(url, onSuccess) {
+  _showModelSpinner(true);
+  if(_modelCache.has(url)){
+    const cachedScene = _modelCache.get(url).clone ? _modelCache.get(url).clone() : _modelCache.get(url);
+    while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
+    prodGroup.add(cachedScene.clone());
+    if(currentTex) applyTexture(currentTex);
+    else prodGroup.traverse(c => { if(c.isMesh) c.material.color.set(baseColor); });
+    _showModelSpinner(false);
+    if(onSuccess) onSuccess();
+    return;
+  }
   gltfLoader.load(url, function(gltf) {
     const model = gltf.scene;
     const box = new THREE.Box3().setFromObject(model);
@@ -1959,13 +1992,15 @@ function loadModelFromUrl(url, onSuccess) {
     model.position.sub(center.multiplyScalar(scale));
     model.scale.setScalar(scale);
     model.traverse(c => { if(c.isMesh) c.castShadow = true; });
+    _modelCache.set(url, model); // lưu cache
     while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
     prodGroup.add(model);
     // Giữ lại màu/texture nếu có
     if(currentTex) applyTexture(currentTex);
     else prodGroup.traverse(c => { if(c.isMesh) c.material.color.set(baseColor); });
+    _showModelSpinner(false);
     if(onSuccess) onSuccess();
-  }, undefined, err => { console.error(err); showToast('Lỗi tải model', '⚠️'); });
+  }, undefined, err => { console.error(err); _showModelSpinner(false); showToast('Lỗi tải model', '⚠️'); });
 }
 function clearRealModel(){usingRealModel=false;document.getElementById('realModelIndicator').classList.remove('show');const activeBtn=document.querySelector('#dynamicProductGrid .prod-btn.on');if(activeBtn)rebuildModel(activeBtn.dataset.model);}
 
@@ -2034,7 +2069,7 @@ const productsData=[
 const productContainer=document.getElementById('productList');
 if(productContainer)productContainer.innerHTML=productsData.map(p=>`<div class="prod-card" data-category="${p.cat}"><div class="prod-tag">Tinh hoa</div><div class=\"prod-thumb\" style=\"background:linear-gradient(145deg,#EAE4D8,#C0B8A4)\">
   ${p.img
-    ? `<img src=\"${p.img}\" alt=\"${p.name}\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover;\">`
+    ? `<img src=\"${p.img}\" alt=\"${p.name}\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover;\" loading=\"lazy\" decoding=\"async\">`
     : p.icon
   }
 </div><div class="prod-info"><div><div class="prod-name">${p.name}</div><div class="prod-origin">${p.origin}</div></div><div class="prod-price">${p.price}</div></div><button class="prod-cta-hover" onclick="openStudioWithMaterial('${p.material}')">Tùy chỉnh 3D →</button></div>`).join('');
@@ -2834,7 +2869,7 @@ function renderMpProducts(filter){
     <div class="mp-card" onclick="openWorkshopDetail('${p.id}')">
       <div class="mp-card-thumb" style="background:${p.bg}">
   ${p.img
-    ? `<img src="${p.img}" alt="${p.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
+    ? `<img src="${p.img}" alt="${p.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy" decoding="async">`
     : `<span>${p.icon}</span>`
   }
         ${p.seats<=3?`<div class="mp-card-disc-badge">🔥 Gần đầy</div>`:''}
@@ -2879,6 +2914,13 @@ function openWorkshopDetail(id){
 document.getElementById('wsDetailNavTitle').textContent=ws.name;
   const hero=document.getElementById('wsHeroImg');
   hero.style.background=ws.bg;
+  // Lazy load workshop hero image
+  hero.style.backgroundImage='';
+  if(ws.img){
+    const imgObj=new Image();
+    imgObj.onload=()=>{hero.style.backgroundImage=`url('${ws.img}')`;hero.style.backgroundSize='cover';hero.style.backgroundPosition='center';};
+    imgObj.src=ws.img;
+  }
   hero.querySelector('.ws-hero-craft-badge')||null;
   document.getElementById('wsHeroCraftBadge').textContent=ws.craft;
   const seatsFrac=`${ws.seats}/${ws.totalSeats} chỗ còn trống`;
@@ -3400,7 +3442,7 @@ function renderTicketPanel() {
        </label>
        
        <div id="qrCodeBox" style="text-align:center; padding:20px; background:#fff; border-radius:8px; border:1.5px dashed var(--border); margin-bottom:20px;">
-         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ChuyenKhoanVietify" style="width:140px; height:140px; object-fit:contain; margin-bottom:12px; border-radius: 8px;">
+         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ChuyenKhoanVietify" style="width:140px; height:140px; object-fit:contain; margin-bottom:12px; border-radius: 8px;" loading="lazy" decoding="async">
          <div style="font-size:12px; color:var(--text2); line-height:1.5;">Quét mã để thanh toán<br><strong style="color:var(--brown);">Nội dung: Họ Tên + SĐT</strong></div>
        </div>
        
