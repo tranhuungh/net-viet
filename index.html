@@ -1265,7 +1265,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           </div>
           <div class="deco-section">
             <div class="deco-section-title">Upload họa tiết</div>
-            <div class="drop-zone" id="dropZone"><input type="file" id="fileIn" accept="image/*"><div class="drop-zone-ico">⬆</div><p><strong>Kéo thả hoặc click</strong><br><span>để upload họa tiết, logo, hình ảnh</span></p></div>
+            <div class="drop-zone" id="dropZone" style="padding:14px 10px;">
+              <input type="file" id="fileIn" accept="image/*" multiple>
+              <div class="drop-zone-ico">⬆</div>
+              <p><strong>Kéo thả hoặc click</strong><br><span>để upload họa tiết, logo, hình ảnh</span></p>
+            </div>
+            <!-- Thư viện họa tiết đã upload -->
+            <div id="patternLibrary" style="display:none;margin-top:10px;">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px;">Chọn họa tiết</div>
+              <div id="patternLibraryGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;"></div>
+              <div style="display:flex;gap:6px;">
+                <button id="patternClearBtn" style="flex:1;padding:8px 4px;background:transparent;border:1.5px solid var(--border);border-radius:5px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--terra)';this.style.color='var(--terra)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🗑 Xóa họa tiết</button>
+                <button id="patternSaveBtn" style="flex:1;padding:8px 4px;background:var(--brown);border:none;border-radius:5px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:all .2s;" onmouseover="this.style.background='var(--terra)'" onmouseout="this.style.background='var(--brown)'">💾 Lưu họa tiết</button>
+              </div>
+            </div>
+            <!-- Họa tiết gợi ý cho model -->
+            <div id="suggestedPatternsSection" style="margin-top:12px;display:none;">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px;">✨ Họa tiết gợi ý cho model</div>
+              <div id="suggestedPatternsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            </div>
           </div>
         </div>
         <div class="tab-pane" id="patternPane">
@@ -1330,7 +1348,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <div class="cart-panel" id="cartPanel">
   <div class="cart-head"><h3>Giỏ hàng <span id="cartCount" style="font-size:14px">(0)</span></h3><button class="cart-close" onclick="closeCart()">✕</button></div>
   <div class="cart-body" id="cartBody"><div class="cart-empty"><span>🧺</span>Chưa có sản phẩm nào</div></div>
-  <div class="cart-foot" id="cartFoot" style="display:none"><div class="cart-total-row"><span>Tổng cộng</span><span id="cartTotal">0 ₫</span></div><button class="cart-checkout" onclick="showToast('Đang chuyển đến thanh toán…')">Thanh toán →</button></div>
+  <div class="cart-foot" id="cartFoot" style="display:none"><div class="cart-total-row"><span>Tổng cộng</span><span id="cartTotal">0 ₫</span></div><button class="cart-checkout" onclick="openCheckoutModal()">Thanh toán →</button></div>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg"></span></div>
 
@@ -1885,8 +1903,8 @@ renderArtisans();
 const exploreDiv=document.getElementById('exploreMode'),studioDiv=document.getElementById('studioMode');
 function showStudio(){exploreDiv.classList.add('hidden');studioDiv.classList.remove('hidden');}
 function showExplore(){exploreDiv.classList.remove('hidden');studioDiv.classList.add('hidden');}
-document.getElementById('openStudioBtnExplore').addEventListener('click',()=>{updateStudioForMaterial('bamboo');showStudio();});
-document.getElementById('exploreStudioBtn').addEventListener('click',()=>{updateStudioForMaterial('bamboo');showStudio();});
+document.getElementById('openStudioBtnExplore').addEventListener('click',()=>{updateStudioForMaterial('bamboo');showStudio();setTimeout(()=>renderSuggestedPatterns('bamboo'),300);});
+document.getElementById('exploreStudioBtn').addEventListener('click',()=>{updateStudioForMaterial('bamboo');showStudio();setTimeout(()=>renderSuggestedPatterns('bamboo'),300);});
 document.getElementById('backToExploreBtn').addEventListener('click',showExplore);
 window.openStudioWithMaterial=function(material){updateStudioForMaterial(material);showStudio();};
 
@@ -1961,7 +1979,8 @@ function loop(){
 new ResizeObserver(()=>{const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;cam.aspect=w/h;cam.updateProjectionMatrix();rend.setSize(w,h);}).observe(container);
 document.getElementById('lightRange').addEventListener('input',e=>key.intensity=parseFloat(e.target.value));
 document.getElementById('roughRange').addEventListener('input',e=>{baseRoughness=1-parseFloat(e.target.value);prodGroup.traverse(c=>{if(c.isMesh)c.material.roughness=1-parseFloat(e.target.value);});});
-document.getElementById('fileIn').addEventListener('change',e=>{if(e.target.files[0]){const fr=new FileReader();fr.onload=ev=>{new THREE.TextureLoader().load(ev.target.result,tex=>applyTexture(tex));};fr.readAsDataURL(e.target.files[0]);}});
+// fileIn is handled by pattern library below
+window.renderSuggestedPatterns = window.renderSuggestedPatterns || function(){};
 
 // ===== REAL MODEL IMPORT =====
 let usingRealModel=false;
@@ -1970,14 +1989,23 @@ const _modelCache = new Map(); // cache model theo URL
 function _showModelSpinner(show){
   const sp=document.getElementById('modelLoadingSpinner');
   if(sp) sp.style.display = show ? 'flex' : 'none';
-}function loadModelFromUrl(url, onSuccess) {
+}
+// Flag để biết khi nào đang reset (xóa họa tiết) vs load bình thường
+let _isResettingTexture = false;
+
+function loadModelFromUrl(url, onSuccess) {
   _showModelSpinner(true);
   if(_modelCache.has(url)){
     const cachedScene = _modelCache.get(url).clone ? _modelCache.get(url).clone() : _modelCache.get(url);
     while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
     prodGroup.add(cachedScene.clone());
-    if(currentTex) applyTexture(currentTex);
-    else prodGroup.traverse(c => { if(c.isMesh) c.material.color.set(baseColor); });
+    if(currentTex) {
+      applyTexture(currentTex);
+    } else if(_isResettingTexture) {
+      // Chỉ reset material khi user bấm xóa họa tiết
+      prodGroup.traverse(c => { if(c.isMesh){ c.material = makeMat(); c.material.needsUpdate = true; } });
+    }
+    // Nếu load bình thường (không reset, không có tex) → giữ nguyên material gốc của GLB
     _showModelSpinner(false);
     if(onSuccess) onSuccess();
     return;
@@ -1992,12 +2020,14 @@ function _showModelSpinner(show){
     model.position.sub(center.multiplyScalar(scale));
     model.scale.setScalar(scale);
     model.traverse(c => { if(c.isMesh) c.castShadow = true; });
-    _modelCache.set(url, model); // lưu cache
+    _modelCache.set(url, model);
     while(prodGroup.children.length) prodGroup.remove(prodGroup.children[0]);
     prodGroup.add(model);
-    // Giữ lại màu/texture nếu có
-    if(currentTex) applyTexture(currentTex);
-    else prodGroup.traverse(c => { if(c.isMesh) c.material.color.set(baseColor); });
+    if(currentTex) {
+      applyTexture(currentTex);
+    } else if(_isResettingTexture) {
+      prodGroup.traverse(c => { if(c.isMesh){ c.material = makeMat(); c.material.needsUpdate = true; } });
+    }
     _showModelSpinner(false);
     if(onSuccess) onSuccess();
   }, undefined, err => { console.error(err); _showModelSpinner(false); showToast('Lỗi tải model', '⚠️'); });
@@ -3454,7 +3484,61 @@ function renderTicketPanel() {
   </div>
 </div>
 
-<div class="cart-overlay" id="ticketOverlay" onclick="closeTicketPanel()" style="z-index: 800;"></div>
+<!-- ===== CHECKOUT MODAL ===== -->
+<div id="checkoutModal" class="modal-overlay" style="z-index:1100;">
+  <div class="artisan-modal" style="max-width:440px;padding:32px;position:relative;">
+    <button class="close-modal" onclick="closeCheckoutModal()">✕</button>
+    <!-- Step 1: Chọn phương thức -->
+    <div id="ckStep1">
+      <h3 style="font-size:24px;margin-bottom:6px;color:var(--dark);">Thanh toán</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:22px;">Chọn phương thức thanh toán của bạn</p>
+      <label id="ckLabelQR" style="display:flex;align-items:center;gap:12px;margin-bottom:12px;cursor:pointer;background:var(--surface);padding:14px;border-radius:10px;border:2px solid var(--brown);transition:all .2s;">
+        <input type="radio" name="ckMethod" value="qr" checked onchange="toggleCkMethod()" style="accent-color:var(--brown);width:16px;height:16px;">
+        <div><div style="font-size:14px;font-weight:700;color:var(--dark);">📱 Thanh toán qua mạng</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Chuyển khoản qua mã QR</div></div>
+      </label>
+      <label id="ckLabelCOD" style="display:flex;align-items:center;gap:12px;margin-bottom:22px;cursor:pointer;background:var(--surface);padding:14px;border-radius:10px;border:2px solid transparent;transition:all .2s;">
+        <input type="radio" name="ckMethod" value="cod" onchange="toggleCkMethod()" style="accent-color:var(--brown);width:16px;height:16px;">
+        <div><div style="font-size:14px;font-weight:700;color:var(--dark);">🚚 Thanh toán khi nhận hàng</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Trả tiền khi nhận được sản phẩm</div></div>
+      </label>
+      <!-- QR Box -->
+      <div id="ckQRBox" style="text-align:center;padding:20px;background:#fff;border-radius:10px;border:1.5px dashed var(--border);margin-bottom:20px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=VietifyCraftStudio-ThanhToan" style="width:150px;height:150px;object-fit:contain;border-radius:8px;margin-bottom:10px;" loading="lazy">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;">Quét mã để thanh toán<br><strong style="color:var(--brown);">Nội dung: Họ Tên + SĐT</strong></div>
+        <div style="font-size:13px;font-weight:700;color:var(--terra);margin-top:10px;" id="ckTotalDisplay">Tổng: 0 ₫</div>
+      </div>
+      <!-- COD info -->
+      <div id="ckCODBox" style="display:none;background:#fff;border-radius:10px;border:1.5px dashed var(--border);padding:18px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">🏠</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7;">Bạn sẽ thanh toán <strong style="color:var(--brown);" id="ckTotalCOD">0 ₫</strong><br>khi nhận hàng từ nhân viên giao hàng.</div>
+      </div>
+      <button style="width:100%;background:var(--brown);color:#fff;border:none;padding:14px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;transition:background .25s;" onmouseover="this.style.background='var(--terra)'" onmouseout="this.style.background='var(--brown)'" onclick="confirmCheckout()">Xác nhận đặt hàng →</button>
+    </div>
+    <!-- Step 2: Đặt hàng thành công -->
+    <div id="ckStep2" style="display:none;text-align:center;">
+      <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+      <h3 style="font-size:22px;color:var(--dark);margin-bottom:10px;">Đặt hàng thành công!</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;">Đơn hàng của bạn đã được ghi nhận.<br>Nghệ nhân sẽ bắt đầu thực hiện sản phẩm của bạn.</p>
+      <div style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left;">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Mã đơn hàng</div>
+        <div style="font-size:20px;font-family:'Cormorant Garamond',serif;font-weight:700;color:var(--brown);" id="ckOrderCode">#VTF-000000</div>
+      </div>
+      <button style="width:100%;background:var(--brown);color:#fff;border:none;padding:13px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:6px;font-family:'Be Vietnam Pro',sans-serif;" onclick="closeCheckoutModal();openOrderTracking()">Theo dõi đơn hàng →</button>
+      <button style="width:100%;background:transparent;color:var(--muted);border:none;padding:10px;font-size:12px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;margin-top:6px;" onclick="closeCheckoutModal()">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ORDER TRACKING PANEL ===== -->
+<div class="cart-overlay" id="trackingOverlay" onclick="closeOrderTracking()" style="z-index:1050;"></div>
+<div class="cart-panel" id="trackingPanel" style="width:420px;z-index:1051;">
+  <div class="cart-head">
+    <h3 style="font-size:20px;font-weight:700;">📦 Theo dõi đơn hàng</h3>
+    <button class="cart-close" onclick="closeOrderTracking()">✕</button>
+  </div>
+  <div class="cart-body" id="trackingBody" style="padding:20px;background:#FBF7F0;"></div>
+</div>
+
+</div>
 <div class="cart-panel" id="ticketPanel" style="width: 420px; z-index: 801;">
     <div class="cart-head" style="display:flex; gap:20px; align-items:baseline; padding: 24px 28px;">
     <h3 id="tabTicketBtn" onclick="switchTicketTab('booked')" style="cursor:pointer; color:var(--dark); font-weight:600; font-size:22px; transition:0.2s; margin:0;">Đã đăng ký</h3>
@@ -3464,4 +3548,445 @@ function renderTicketPanel() {
   <div class="cart-body" id="ticketBody" style="background: #FBF7F0;">
     </div>
 </div>
+
+<script>
+// ===== PATTERN LIBRARY (Upload nhiều họa tiết, chọn, xóa, lưu) =====
+(function(){
+  let uploadedPatterns = []; // [{id, name, dataURL, tex}]
+  let selectedPatternId = null;
+  let savedPatternDataURLs = []; // lưu local
+
+  const fileIn = document.getElementById('fileIn');
+  const libraryEl = document.getElementById('patternLibrary');
+  const gridEl = document.getElementById('patternLibraryGrid');
+  const clearBtn = document.getElementById('patternClearBtn');
+  const saveBtn = document.getElementById('patternSaveBtn');
+
+  // Khi user chọn file (có thể nhiều)
+  fileIn.addEventListener('change', function(e){
+    const files = Array.from(e.target.files);
+    if(!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const id = Date.now() + Math.random();
+        uploadedPatterns.push({ id, name: file.name, dataURL: ev.target.result });
+        renderPatternLibrary();
+        // Nếu chỉ upload 1 file, tự áp dụng ngay
+        if(uploadedPatterns.length === 1) applyPatternById(id);
+      };
+      reader.readAsDataURL(file);
+    });
+    this.value = '';
+  });
+
+  // Drag & drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor='var(--brown)'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor=''; });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.style.borderColor='';
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const id = Date.now() + Math.random();
+        uploadedPatterns.push({ id, name: file.name, dataURL: ev.target.result });
+        renderPatternLibrary();
+        if(uploadedPatterns.length === 1) applyPatternById(id);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  function applyPatternById(id){
+    const p = uploadedPatterns.find(x => x.id == id);
+    if(!p) return;
+    selectedPatternId = id;
+    new THREE.TextureLoader().load(p.dataURL, tex => {
+      p.tex = tex;
+      applyTexture(tex);
+    });
+    renderPatternLibrary();
+  }
+
+  function renderPatternLibrary(){
+    if(!uploadedPatterns.length){ libraryEl.style.display='none'; return; }
+    libraryEl.style.display='block';
+    gridEl.innerHTML = uploadedPatterns.map(p => `
+      <div data-pid="${p.id}" title="${p.name}" style="position:relative;border-radius:6px;overflow:hidden;cursor:pointer;border:2.5px solid ${p.id==selectedPatternId?'var(--brown)':'transparent'};aspect-ratio:1;background:#eee;transition:border-color .18s;">
+        <img src="${p.dataURL}" style="width:100%;height:100%;object-fit:cover;display:block;">
+        ${p.id==selectedPatternId?'<div style="position:absolute;top:2px;right:2px;background:var(--brown);color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;">✓</div>':''}
+        <button data-del="${p.id}" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;line-height:1;padding:0;">✕</button>
+      </div>`).join('');
+    // Events
+    gridEl.querySelectorAll('[data-pid]').forEach(el => {
+      el.addEventListener('click', e => {
+        if(e.target.dataset.del) return;
+        applyPatternById(el.dataset.pid);
+      });
+    });
+    gridEl.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.del;
+        uploadedPatterns = uploadedPatterns.filter(p => String(p.id) !== String(id));
+        if(selectedPatternId == id){ selectedPatternId = null; }
+        renderPatternLibrary();
+      });
+    });
+  }
+
+  clearBtn.addEventListener('click', () => {
+    currentTex = null;
+    baseColor = 0xD4C4B0;
+    baseRoughness = 0.55;
+    const lightRange = document.getElementById('lightRange');
+    const roughRange = document.getElementById('roughRange');
+    if(lightRange){ lightRange.value = 0.85; key.intensity = 0.85; lightRange.nextElementSibling.textContent = '43%'; }
+    if(roughRange){ roughRange.value = 0.35; roughRange.nextElementSibling.textContent = '35%'; }
+    document.querySelectorAll('#decoSwatches .sw').forEach(s => s.classList.remove('on'));
+    const meshData = window._meshData;
+    if(meshData){ meshData.forEach(data => { data.strokeCtx.clearRect(0,0,data.strokeCanvas.width,data.strokeCanvas.height); data.tex.needsUpdate = true; }); }
+    selectedPatternId = null;
+    renderPatternLibrary();
+    document.querySelectorAll('#suggestedPatternsGrid > div').forEach(el => {
+      el.style.borderColor = 'var(--border)';
+      el.style.transform = '';
+    });
+    // Dùng flag để loadModelFromUrl biết đây là reset, không phải load bình thường
+    _isResettingTexture = true;
+    const activeBtn = document.querySelector('#dynamicProductGrid .prod-btn.on');
+    if(activeBtn) {
+      rebuildModel(activeBtn.dataset.model);
+    }
+    // Tắt flag sau một tick (model cache load sync, async load cũng ok vì flag tắt sau khi gltf callback chạy)
+    setTimeout(() => { _isResettingTexture = false; }, 2000);
+    if(typeof showToast === 'function') showToast('Đã về trạng thái ban đầu', '✨');
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if(!selectedPatternId){ showToast('Chưa chọn họa tiết nào', '⚠️'); return; }
+    const p = uploadedPatterns.find(x => x.id == selectedPatternId);
+    if(!p) return;
+    const a = document.createElement('a');
+    a.href = p.dataURL;
+    a.download = p.name || 'hoatiet.png';
+    a.click();
+    showToast('Đã tải xuống họa tiết!', '💾');
+  });
+
+  // Expose globally for suggested patterns
+  window._applyPatternFromURL = function(dataURL, name){
+    currentTex = null; // reset trước để tránh conflict
+    new THREE.TextureLoader().load(dataURL, tex => {
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      applyTexture(tex);
+      showToast('Đã áp dụng: ' + name, '✨');
+    });
+  };
+})();
+
+// ===== SUGGESTED PATTERNS CHO MÂY TRE ĐAN =====
+// SVG patterns được render thành canvas rồi chuyển thành URL
+const bambooSuggestedPatterns = [
+  {
+    name: 'Đan Chéo Phú Vinh',
+    desc: 'Hoa văn đan chéo truyền thống',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#F0E4C8'; ctx.fillRect(0,0,256,256);
+      ctx.strokeStyle = '#8B5E2A'; ctx.lineWidth = 4;
+      for(let i = -256; i < 512; i += 18){
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+256, 256); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(i, 256); ctx.lineTo(i+256, 0); ctx.stroke();
+      }
+      ctx.strokeStyle = '#C4913E'; ctx.lineWidth = 1.5;
+      for(let i = -256; i < 512; i += 9){
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+256, 256); ctx.stroke();
+      }
+      return c.toDataURL();
+    }
+  },
+  {
+    name: 'Lá Tre Xanh',
+    desc: 'Họa tiết lá tre dân gian',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#E8F0D8'; ctx.fillRect(0,0,256,256);
+      const drawLeaf = (x,y,angle)=>{
+        ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.ellipse(0,0,6,22,0,0,Math.PI*2);
+        ctx.fillStyle = '#4A7A30'; ctx.fill();
+        ctx.strokeStyle='#3A6020'; ctx.lineWidth=1; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(0,22);
+        ctx.strokeStyle='#E8F0D8'; ctx.lineWidth=1; ctx.stroke();
+        ctx.restore();
+      };
+      for(let row=0;row<8;row++) for(let col=0;col<8;col++){
+        const x=col*32+16+(row%2)*16, y=row*32+16;
+        drawLeaf(x,y,-0.3); drawLeaf(x+8,y+6,0.4); drawLeaf(x-6,y+10,0.1);
+      }
+      return c.toDataURL();
+    }
+  },
+  {
+    name: 'Sọc Mộc Tre',
+    desc: 'Vân sọc mộc mạc chất liệu tre',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      const g = ctx.createLinearGradient(0,0,256,0);
+      g.addColorStop(0,'#C8A86A'); g.addColorStop(0.2,'#E0C490'); g.addColorStop(0.4,'#B89050'); g.addColorStop(0.6,'#D4B07A'); g.addColorStop(0.8,'#C09060'); g.addColorStop(1,'#C8A86A');
+      ctx.fillStyle = g; ctx.fillRect(0,0,256,256);
+      ctx.strokeStyle = 'rgba(90,60,20,.25)'; ctx.lineWidth = 2;
+      for(let x=0;x<256;x+=8){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,256); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+      for(let x=4;x<256;x+=8){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,256); ctx.stroke(); }
+      return c.toDataURL();
+    }
+  },
+  {
+    name: 'Hoa Văn Trúc',
+    desc: 'Đốt trúc cách điệu',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#F5EDD8'; ctx.fillRect(0,0,256,256);
+      ctx.strokeStyle = '#6A8B4A'; ctx.lineWidth = 3;
+      for(let x=16;x<256;x+=40){
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,256); ctx.stroke();
+        for(let y=20;y<256;y+=30){
+          ctx.beginPath(); ctx.moveTo(x-5,y); ctx.lineTo(x+5,y);
+          ctx.strokeStyle='#4A6A2A'; ctx.lineWidth=2; ctx.stroke();
+          ctx.strokeStyle='#6A8B4A'; ctx.lineWidth=3;
+        }
+      }
+      ctx.fillStyle='rgba(180,140,80,.15)';
+      for(let x=16;x<256;x+=40) ctx.fillRect(x-6,0,12,256);
+      return c.toDataURL();
+    }
+  },
+  {
+    name: 'Mây Xoắn Cổ',
+    desc: 'Hoa văn mây xoắn truyền thống',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#EDE0C8'; ctx.fillRect(0,0,256,256);
+      const drawSpiral = (cx,cy,r)=>{
+        ctx.beginPath();
+        for(let t=0;t<Math.PI*4;t+=0.05){
+          const radius = r*(1 - t/(Math.PI*4*1.5));
+          if(radius<0) break;
+          const x=cx+radius*Math.cos(t), y=cy+radius*Math.sin(t);
+          if(t===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle='#8B5E2A'; ctx.lineWidth=2; ctx.stroke();
+      };
+      for(let row=0;row<4;row++) for(let col=0;col<4;col++) drawSpiral(col*64+32, row*64+32, 24);
+      return c.toDataURL();
+    }
+  },
+  {
+    name: 'Hình Thoi Dân Gian',
+    desc: 'Họa tiết thoi đan xen truyền thống',
+    generate: function(){
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#F0E4C4'; ctx.fillRect(0,0,256,256);
+      const drawDiamond = (cx,cy,w,h,fill)=>{
+        ctx.beginPath(); ctx.moveTo(cx,cy-h); ctx.lineTo(cx+w,cy); ctx.lineTo(cx,cy+h); ctx.lineTo(cx-w,cy); ctx.closePath();
+        ctx.fillStyle=fill; ctx.fill(); ctx.strokeStyle='#7A5030'; ctx.lineWidth=1.5; ctx.stroke();
+      };
+      for(let r=0;r<8;r++) for(let col=0;col<8;col++){
+        const x=col*32+(r%2)*16, y=r*32;
+        drawDiamond(x,y,12,12,r%2?'#C4903A':'#E8C880');
+      }
+      return c.toDataURL();
+    }
+  }
+];
+
+// Render suggested patterns khi vào tab Mây Tre Đan
+function renderSuggestedPatterns(material){
+  const section = document.getElementById('suggestedPatternsSection');
+  const grid = document.getElementById('suggestedPatternsGrid');
+  if(material !== 'bamboo'){ section.style.display='none'; return; }
+  section.style.display='block';
+
+  // Lấy model đang active để show 2 họa tiết phù hợp
+  const activeBtn = document.querySelector('#dynamicProductGrid .prod-btn.on');
+  const modelId = activeBtn ? activeBtn.dataset.model : 'bag';
+  
+  // Map model → chỉ số 2 họa tiết gợi ý
+  const modelPatternMap = {
+    nonla_mini: [0,1],  // Đan chéo, Lá tre
+    nonla:      [0,2],  // Đan chéo, Sọc mộc
+    pet_house:  [2,3],  // Sọc mộc, Hoa văn trúc
+    pet_toy:    [1,5],  // Lá tre, Hình thoi
+    pencil_case:[2,4],  // Sọc mộc, Mây xoắn
+    bag:        [4,5],  // Mây xoắn, Hình thoi
+  };
+  const indices = modelPatternMap[modelId] || [0,4];
+  const patterns = indices.map(i => bambooSuggestedPatterns[i]);
+
+  grid.innerHTML = patterns.map((p,i) => {
+    const dataURL = p.generate();
+    return `<div style="border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:all .2s;background:#fff;" 
+      onmouseover="this.style.borderColor='var(--brown)';this.style.transform='translateY(-2px)'" 
+      onmouseout="this.style.borderColor='var(--border)';this.style.transform=''"
+      onclick="applyAndToastSuggested('${dataURL.substring(0,50)}..._${i}', '${p.name}', this)" data-url-idx="${i}">
+      <img src="${dataURL}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" data-fullurl="${dataURL}">
+      <div style="padding:6px 8px;"><div style="font-size:11px;font-weight:700;color:var(--dark);">${p.name}</div><div style="font-size:9px;color:var(--muted);margin-top:2px;">${p.desc}</div></div>
+    </div>`;
+  }).join('');
+
+  // Store dataURLs for onclick
+  window._suggestedDataURLs = patterns.map(p => p.generate());
+  grid.querySelectorAll('[data-url-idx]').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.urlIdx);
+      const url = window._suggestedDataURLs[idx];
+      const name = patterns[idx].name;
+      window._applyPatternFromURL(url, name);
+    });
+  });
+}
+window.applyAndToastSuggested = function(){};// placeholder (handled above by direct listener)
+
+// Hook vào updateStudioForMaterial để render suggested patterns
+const _origUpdateStudio = window.updateStudioForMaterial;
+window.updateStudioForMaterial = function(material){
+  if(_origUpdateStudio) _origUpdateStudio(material);
+  setTimeout(()=>renderSuggestedPatterns(material), 200);
+};
+
+// Also render when switching to deco tab
+document.getElementById('tabDecoBtn').addEventListener('click', ()=>{
+  setTimeout(()=>renderSuggestedPatterns(currentMaterial || 'bamboo'), 100);
+});
+
+
+// ===== CHECKOUT MODAL =====
+let checkoutOrders = [];
+
+function openCheckoutModal(){
+  const total = document.getElementById('cartTotal')?.textContent || '0 ₫';
+  document.getElementById('ckTotalDisplay').textContent = 'Tổng: ' + total;
+  document.getElementById('ckTotalCOD').textContent = total;
+  document.getElementById('ckStep1').style.display = 'block';
+  document.getElementById('ckStep2').style.display = 'none';
+  document.querySelector('input[name="ckMethod"][value="qr"]').checked = true;
+  toggleCkMethod();
+  document.getElementById('checkoutModal').classList.add('active');
+}
+function closeCheckoutModal(){ document.getElementById('checkoutModal').classList.remove('active'); }
+
+function toggleCkMethod(){
+  const method = document.querySelector('input[name="ckMethod"]:checked')?.value;
+  document.getElementById('ckQRBox').style.display = method==='qr' ? 'block' : 'none';
+  document.getElementById('ckCODBox').style.display = method==='cod' ? 'block' : 'none';
+  document.getElementById('ckLabelQR').style.borderColor = method==='qr' ? 'var(--brown)' : 'transparent';
+  document.getElementById('ckLabelCOD').style.borderColor = method==='cod' ? 'var(--brown)' : 'transparent';
+}
+
+function confirmCheckout(){
+  const method = document.querySelector('input[name="ckMethod"]:checked')?.value || 'qr';
+  const orderCode = '#VTF-' + Date.now().toString().slice(-6);
+  const items = [...cartItems];
+  const total = document.getElementById('cartTotal')?.textContent || '0 ₫';
+  
+  // Tạo order
+  const order = {
+    id: orderCode,
+    items,
+    total,
+    method,
+    status: 0, // 0=Đã đặt, 1=Đang làm, 2=Đang giao, 3=Đã nhận
+    createdAt: new Date().toLocaleString('vi-VN'),
+    steps: [
+      { label:'✅ Đơn hàng đã đặt', time: new Date().toLocaleString('vi-VN'), done:true },
+      { label:'🤲 Nghệ nhân đang làm', time: '', done:false },
+      { label:'📦 Đóng gói & giao hàng', time: '', done:false },
+      { label:'🏠 Đã giao đến bạn', time: '', done:false },
+    ]
+  };
+  checkoutOrders.unshift(order);
+  
+  // Simulate progress (demo)
+  setTimeout(()=>{ order.steps[1].done=true; order.steps[1].time='Đang xử lý…'; order.status=1; renderTrackingBody(); },3000);
+  setTimeout(()=>{ order.steps[2].done=true; order.steps[2].time='Dự kiến 5–10 ngày'; order.status=2; renderTrackingBody(); },8000);
+
+  // Clear cart
+  cartItems = [];
+  renderCart();
+  closeCart();
+
+  document.getElementById('ckOrderCode').textContent = orderCode;
+  document.getElementById('ckStep1').style.display = 'none';
+  document.getElementById('ckStep2').style.display = 'block';
+  if(typeof showToast==='function') showToast('Đặt hàng thành công! ' + orderCode, '🎉');
+}
+
+function openOrderTracking(){
+  renderTrackingBody();
+  document.getElementById('trackingPanel').classList.add('open');
+  document.getElementById('trackingOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeOrderTracking(){
+  document.getElementById('trackingPanel').classList.remove('open');
+  document.getElementById('trackingOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderTrackingBody(){
+  const body = document.getElementById('trackingBody');
+  if(!checkoutOrders.length){
+    body.innerHTML = `<div class="cart-empty" style="margin-top:60px;"><span style="font-size:40px;">📦</span><br>Chưa có đơn hàng nào</div>`;
+    return;
+  }
+  body.innerHTML = checkoutOrders.map(order => `
+    <div style="background:#fff;border-radius:12px;border:1.5px solid var(--border);padding:16px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--brown);">${order.id}</div>
+        <div style="font-size:10px;color:var(--muted);">${order.createdAt}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">
+        ${order.items.map(it=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--surface);padding:3px 8px;border-radius:4px;margin:2px;">${it.icon} ${it.name}</span>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <span style="color:var(--muted);">${order.method==='qr'?'💳 Thanh toán QR':'🚚 Thanh toán khi nhận hàng'}</span>
+        <span style="font-weight:700;color:var(--brown);">${order.total}</span>
+      </div>
+      <!-- Tracking Steps -->
+      <div style="position:relative;padding-left:24px;">
+        ${order.steps.map((step,i) => `
+          <div style="position:relative;padding-bottom:${i<order.steps.length-1?'16px':'0'};display:flex;align-items:flex-start;gap:10px;">
+            <div style="position:absolute;left:-24px;top:0;width:16px;height:16px;border-radius:50%;background:${step.done?'var(--brown)':'#e0d8cc'};border:2px solid ${step.done?'var(--amber)':'#d0c8bc'};flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+              ${step.done?'<span style="color:#fff;font-size:8px;font-weight:900;">✓</span>':''}
+            </div>
+            ${i<order.steps.length-1?`<div style="position:absolute;left:-17px;top:16px;width:2px;height:calc(100% - 4px);background:${step.done?'var(--amber)':'#e0d8cc'};"></div>`:''}
+            <div>
+              <div style="font-size:12px;font-weight:${step.done?'600':'400'};color:${step.done?'var(--dark)':'var(--muted)'};">${step.label}</div>
+              ${step.time?`<div style="font-size:10px;color:var(--amber);margin-top:2px;">${step.time}</div>`:''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// Expose openOrderTracking in shipping section
+(function(){
+  const shippingEl = document.querySelector('.shipping-placeholder');
+  if(shippingEl){
+    shippingEl.innerHTML = `<p style="margin-bottom:12px;">🚚 Theo dõi đơn hàng của bạn tại đây</p><button onclick="openOrderTracking()" style="background:var(--brown);color:#fff;border:none;padding:10px 28px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.08em;font-family:'Be Vietnam Pro',sans-serif;">Xem đơn hàng →</button>`;
+  }
+})();
+</script>
 </body>
+
